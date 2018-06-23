@@ -35,6 +35,7 @@
 (require 'ffap)
 (require 'neotree)
 (require 'helm-ag)
+(require 'helm-projectile)
 
 (defun zw-now-page ()
   "What is the path to the page for this time"
@@ -45,7 +46,7 @@
   "Go to the journal page for now"
   (interactive)
   (switch-to-buffer (find-file-noselect (zw-now-page)))
-  ; TODO: if empyt buffer, add template?
+  ; TODO: if empyt buffer, add date template? have zw-insert-header, but it wont be date
   (zw-mode)
 )
 
@@ -130,6 +131,7 @@
     (if (and name fname (file-exists-p fname))
         (find-file fname)
         (find-file-at-point fname))
+    (if (= (buffer-size) 0) (zw-insert-header))
     (zw-mode )))
 
 ;; with selection?
@@ -139,6 +141,78 @@
   (zw-ffap wikipath)
   (read-only-mode))
 
+
+; find a page 
+(defun zw-helm-projectile ()
+  "go to a file using helm-projectile (req. notebook in VCS)"
+  (interactive)
+  (helm-projectile)
+  (zw-mode))
+
+; find a page but dont go there, just insert it
+(defun zw-buffer-to-link (buffer)
+  "make a link of a given buffer"
+  (zw-mklink (zw-path2wiki (expand-file-name (buffer-file-name buffer))))
+)
+
+(defun zw-buffer-close-insert (cur)
+   "go away from buffer created soley to get link. probably a bad idea"
+  ; TODO: find a way to restore buffer list. maybe dont kill the buffer incase it was already open?
+  (let* ((res (current-buffer)))
+   ;(switch-to-buffer cur) ; go back to where we are told
+   (kill-buffer res) ; go back by killing buffer we just created
+   (insert (zw-buffer-to-link res))
+  )
+)
+
+;; search/projectile insert results
+(defun zw-insert-helm-projectile ()
+  "use projectile to insert on the current page.
+   opens projectile buffer before switching back"
+  (interactive)
+  (setq cur (current-buffer))
+  (zw-helm-projectile)
+  (zw-buffer-close-insert cur)
+)
+
+(defun zw-insert-search ()
+  "Search zim notebook with ag."
+  (interactive)
+  (let* ((cur (current-buffer)))
+    (zw-search)
+    (zw-buffer-close-insert cur))
+)
+
+; wrap in a link
+; TODO: filename does not catpure + but does get :
+(defun zw-link-wrap ()
+  "wrap current word as link"
+  (interactive)
+  (let*
+      ((bounds (bounds-of-thing-at-point 'filename))
+      (x (car bounds))
+      (y (cdr bounds))
+      (s (buffer-substring-no-properties x y)))
+    (progn
+      (delete-region x y)
+      (goto-char x)
+      (insert (zw-mklink s))
+      )))
+  
+(defun zw-insert-header ()
+  "insert header on a new page"
+  (interactive)
+  (goto-char 0)
+  (insert (concat
+      "Content-Type: text/x-zim-wiki\n"
+      "Wiki-Format: zim 0.4\n"
+     ;"Creation-Date:.*\n*\\)?"
+      " ====== "
+      (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))
+      " ======\n"
+      ;"Created:  \n*"
+ )))
+
 (defun zw-deft ()
   "Deft search without evil mode."
   (interactive)
@@ -147,18 +221,44 @@
 )
 
 
+(defun zw-buffer-path-to-kill-ring ()
+  "put the current file full path onto the kill ring"
+  (interactive)
+  (kill-new (expand-file-name (buffer-file-name)))
+)
+
+(defun zw-insert-kill-ring-as-link ()
+  "put the current file full path onto the kill ring"
+  (interactive)
+  (insert (zw-mklink (zw-path2wiki (current-kill 0))))
+)
+(defun zw-insert-prev-buffer-link ()
+   "link previous buffer path as wiki"
+   (interactive)
+   (insert (zw-buffer-to-link (other-buffer (current-buffer) 1)))
+)
 
 ; http://ergoemacs.org/emacs/elisp_create_major_mode_keymap.html
 (defvar zw-mode-map
   (let ((map (make-sparse-keymap)))
-    ; links
-    (define-key map (kbd "C-c f")   'zw-search)       ; find in all of notebook
-    (define-key map (kbd "C-c RET") 'zw-ffap)         ; go to link
+    ; go places
+    (define-key map (kbd "C-c f")   'zw-helm-projectile); go to a page by searching file names
+    (define-key map (kbd "C-c C-f") 'zw-search)         ; find in all of notebook
+    (define-key map (kbd "C-c RET") 'zw-ffap)           ; go to link
+
+    ; make links
+    (define-key map (kbd "C-c l")   'zw-insert-helm-projectile); 
+    (define-key map (kbd "C-c C-l") 'zw-insert-search)         ; 
+
+    (define-key map (kbd "C-c w")   'zw-link-wrap)      ; a:b -> [[a:b]]
+    (define-key map (kbd "C-c y")   'zw-buffer-path-to-kill-ring) ; copy current file path
+    (define-key map (kbd "C-c p")   'zw-insert-kill-ring-as-link) ; paste as a link
+    (define-key map (kbd "C-c C-p") 'zw-insert-prev-buffer-link) ; buffer before this one as a wiki link
 
     ;date/time
-    (define-key map (kbd "C-c N")   'zw-goto-now)       ; go to now page
-    (define-key map (kbd "C-c n")   'zw-insert-now-link); link to curret date/time
-    (define-key map (kbd "C-c C-n") 'zw-insert-current-at-now) ; insert cur page into now page
+    (define-key map (kbd "C-c n")   'zw-goto-now)       ; go to now page
+    (define-key map (kbd "C-c N")   'zw-insert-now-link); link to curret date/time
+    (define-key map (kbd "C-c C-n") 'zw-insert-current-at-now) ; insert cur page into now page (and go there)
 
     ; tree 
     (define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
@@ -167,7 +267,7 @@
     map)
    "Keymap for zw-mode.")
 
-(define-derived-mode zw-mode text-mode "zm"
+(define-derived-mode zw-mode text-mode "zw"
   "Major mode for eding zim wiki."
   (dokuwiki-mode)             ; start with wikimode
   (use-local-map zw-mode-map) ; unnecessary?
@@ -179,7 +279,7 @@
         (concat "^\\(Content-Type.*\n*\\)?"
   	      "\\(Wiki-Format:.*\n*\\)?"
   	      "\\(Creation-Date:.*\n*\\)?"
-  	      "\\( *======.*\nCreated .*\n*\\)?") )
+  	      "\\( *======.*\n\\)?\\(Created .*\n*\\)?") ) 
   (set (make-local-variable 'deft-use-filename-as-title) t)
 )
 
@@ -191,10 +291,6 @@
 (ert-deftest mklink-path () (should (= (zw-mklink "foo:bar") "[[foo:bar]]")))
 
 
-;; TODO: bindings
-;; C-c f => file to link
-;; C-c C-w => go to week, insert from page under date
-;; C-c l => insert link (+search?)
 
 ;; prettify headers?
 ;; https://github.com/sabof/org-bullets/blob/master/org-bullets.el
