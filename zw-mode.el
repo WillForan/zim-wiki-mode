@@ -31,11 +31,12 @@
   )
 
 
-;; confiugre other packages
+;; configure other packages
 (require 'ffap)
 (require 'neotree)
 (require 'helm-ag)
 (require 'helm-projectile)
+(require 'org-mode)
 
 (defun zw-now-page ()
   "What is the path to the page for this time"
@@ -208,12 +209,13 @@
   (insert (concat
       "Content-Type: text/x-zim-wiki\n"
       "Wiki-Format: zim 0.4\n"
-     ;"Creation-Date:.*\n*\\)?"
-      " ====== "
+      "Creation-Date: " (format-time-string "%Y-%m-%dT%H:%M:%S%z")  "\n"
+      "====== "
       (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))
       " ======\n"
-      ;"Created:  \n*"
- )))
+      "Created: " (format-time-string "%A %d %B %Y") "\n";Created Thursday 17 May 2018
+      )) 
+ )
 
 (defun zw-deft ()
   "Deft search without evil mode."
@@ -266,12 +268,16 @@
     (define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
     (define-key map (kbd "C-c T")   'neotree-find)    ; find thing in tree
 
+    ; org mode theft
+    (define-key map (kbd "M-RET")   'org-insert-item)    ; insert new list item
+
     map)
    "Keymap for zw-mode.")
 
 (define-derived-mode zw-mode text-mode "zw"
   "Major mode for eding zim wiki."
   (dokuwiki-mode)             ; start with wikimode
+  (flyspell-mode-on)
   (use-local-map zw-mode-map) ; unnecessary?
 
   ; deft -- probably want to use helm-ag instead
