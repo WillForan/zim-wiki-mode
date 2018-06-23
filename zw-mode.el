@@ -115,7 +115,7 @@
     (progn
       (zw-goto-now)
       ; go to end 
-      (goto-char (point-max)) ; TODO: change for week
+      (goto-char (point-max)) ; TODO: change for week -- search for week dayname
       (insert "\n")
       (insert (zw-mklink cur)))))
 
@@ -160,8 +160,10 @@
   ; TODO: find a way to restore buffer list. maybe dont kill the buffer incase it was already open?
   (let* ((res (current-buffer)))
    ;(switch-to-buffer cur) ; go back to where we are told
-   (kill-buffer res) ; go back by killing buffer we just created
-   (insert (zw-buffer-to-link res))
+   (if (not (string= (buffer-file-name res) (buffer-file-name cur)))
+    (progn (kill-buffer res) ; go back by killing buffer we just created
+           (insert (zw-buffer-to-link res))
+	   ))
   )
 )
 
@@ -184,7 +186,7 @@
 )
 
 ; wrap in a link
-; TODO: filename does not catpure + but does get :
+; TODO: at-point for 'filename does not catpure + but does get :
 (defun zw-link-wrap ()
   "wrap current word as link"
   (interactive)
@@ -291,6 +293,11 @@
 (ert-deftest mklink-path () (should (= (zw-mklink "foo:bar") "[[foo:bar]]")))
 
 
+;; TODO:
+;;  * agenda "[ ] task [d: yyyy-mm-dd]"
+;;  * backlink collection (use sqlitedb? zimwiki uses?)
+;;  * tags
+;;  * 
 
 ;; prettify headers?
 ;; https://github.com/sabof/org-bullets/blob/master/org-bullets.el
