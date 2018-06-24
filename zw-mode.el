@@ -36,7 +36,7 @@
 (require 'neotree)
 (require 'helm-ag)
 (require 'helm-projectile)
-(require 'org-mode)
+;(require 'org-mode)
 
 (defun zw-now-page ()
   "What is the path to the page for this time"
@@ -134,6 +134,12 @@
         (find-file-at-point fname))
     (if (= (buffer-size) 0) (zw-insert-header))
     (zw-mode )))
+
+(defun zw-ffap-below ()
+  "open a link in new window below current"
+  (interactive)
+  (with-selected-window (split-window-below) (zw-ffap))
+)
 
 ;; with selection?
 (defun zw-vfap (&optional wikipath)
@@ -246,9 +252,10 @@
 (defvar zw-mode-map
   (let ((map (make-sparse-keymap)))
     ; go places
-    (define-key map (kbd "C-c f")   'zw-helm-projectile); go to a page by searching file names
-    (define-key map (kbd "C-c C-f") 'zw-search)         ; find in all of notebook
-    (define-key map (kbd "C-c RET") 'zw-ffap)           ; go to link
+    (define-key map (kbd "C-c f")     'zw-helm-projectile); go to a page by searching file names
+    (define-key map (kbd "C-c C-f")   'zw-search)         ; find in all of notebook
+    (define-key map (kbd "C-c RET")   'zw-ffap)           ; go to link
+    (define-key map (kbd "C-c M-RET") 'zw-ffap-below)     ; go to link in new window
 
     ; make links
     (define-key map (kbd "C-c l")   'zw-insert-helm-projectile); 
