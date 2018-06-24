@@ -107,3 +107,4 @@ sleep $stepsleeptime
 kill $recordpid
 #killall screenkey
 killall key-mon
+ffmpeg -i demo.ogv demo.gif
