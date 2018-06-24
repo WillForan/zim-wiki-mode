@@ -1,7 +1,8 @@
 # zw-mode
 An elisp package for editing [zim-wiki](http://zim-wiki.org) in emacs.
 
-This leans on `helm` and `dokuwiki` modes to do much of the heavy lifting.
+This package primarily provides convenient page linking and journaling by extending `dokuwiki-mode` and wrapping functions around `helm-projectile` and `helm-ag`.
+
 ## Demo
 using zw-mode with evil-mode and leuven theme
 
