@@ -3,6 +3,9 @@ An elisp package for editing [zim-wiki](http://zim-wiki.org) in emacs.
 
 This package primarily provides convenient page linking and journaling by extending `dokuwiki-mode` and wrapping functions around `helm-projectile` and `helm-ag`.
 
+### Motivation
+Even though any editor can edit zim's plain text files, none are particularly efficient. Hopefully, `zw-mode` reduces that friction in emacs.
+
 ## Demo
 using zw-mode with evil-mode and leuven theme
 
