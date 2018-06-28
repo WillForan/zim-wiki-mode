@@ -74,7 +74,7 @@ curl  "https://github.com/WillForan/zw-mode/blob/master/zw-mode.el?raw=true" > ~
   :bind ("C-c n" . zw-goto-now)
   :init 
     (setq zim-root "~/path/to/wiki")
-    (setq zw-jounal-datestr "Calendar/%Y/Week_%02U.txt") ; see: C-h f format-time-string
+    (setq zw-jounal-datestr "Calendar/%Y/Week_%02V.txt") ; see: C-h f format-time-string
 )
 ```
 

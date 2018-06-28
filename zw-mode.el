@@ -19,7 +19,7 @@
   :group 'zw-mode
   :type 'string
  )
-(defcustom zw-journal-datestr "Calendar/%Y/Week_%02U.txt"
+(defcustom zw-journal-datestr "Calendar/%Y/Week_%02V.txt"
   "Path as time format to journal pages."
   :group 'zw-mode
   :type 'string
