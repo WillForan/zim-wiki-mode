@@ -1,47 +1,66 @@
-;;; package --- Summary:
-; Zim Wiki mode 
+;;; zw-mode.el --- Zim Deskopt Wiki edit mode          -*- lexical-binding: t; -*-
+
+;; URL: https://github.com/WillForan/zw-mode
+;; Author: Will Foran <willforan+zw-mode@gmail.com>
+;; Keywords: outlines
+;; Package-Requires: ((emacs "25") (helm-ag "0.58") (helm-projectile "0.14.0") (ffap "0"))
+;; Version: 0.0.1
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
 
 ;;; Commentary:
+;; Edit zim wiki txt files within emacs
+;
 ; ffap code from:
 ;   https://www.reddit.com/r/emacs/comments/676r5b/how_to_stop_findfileatprompting_when_there_is_a/
 
+
 ;;; Code:
 
-(defgroup zw-mode nil
+
+;; configure other packages
+(require 'ffap)
+(require 'helm-ag)
+(require 'helm-projectile)
+;(require 'org-mode)
+;(require 'neotree)
+
+(defgroup zw nil
   "Major mode for a zim wiki notebook (dokuwiki derivitive)."
   :group 'text
   :prefix "zw-"
   :tag "ZimWiki"
 :link '(url-link "http://zim-wiki.org"))
 
-(defcustom zim-root "/home/foranw/notes/PersonalWiki"
+(defcustom zw-root "/home/foranw/notes/PersonalWiki"
   "The root folder for the zim wiki notebook"
-  :group 'zw-mode
+  :group 'zw
   :type 'string
  )
 (defcustom zw-journal-datestr "Calendar/%Y/Week_%02V.txt"
   "Path as time format to journal pages."
-  :group 'zw-mode
+  :group 'zw
   :type 'string
   )
 (defcustom zw-now-disp "[d: %Y-%m-%d]"
   "How to insert date/time."
-  :group 'zw-mode
+  :group 'zw
   :type 'string
   )
 
 
-;; configure other packages
-(require 'ffap)
-(require 'neotree)
-(require 'helm-ag)
-(require 'helm-projectile)
-;(require 'org-mode)
-
 (defun zw-now-page ()
   "What is the path to the page for this time"
   (let ((datestr (format-time-string zw-journal-datestr)))
-	(concat zim-root "/" datestr)))
+	(concat zw-root "/" datestr)))
 
 (defun zw-goto-now ()
   "Go to the journal page for now"
@@ -54,7 +73,7 @@
 (defun zw-search ()
   "Search zim notebook with ag."
   (interactive)
-  (helm-do-ag zim-root)
+  (helm-do-ag zw-root)
   (zw-mode)
 )
 
@@ -69,14 +88,14 @@
      (zw-path2wiki (zw-now-page))
      (format-time-string zw-now-disp)))
 
-;; :a:b to /zim-root/a/b.txt
+;; :a:b to /zw-root/a/b.txt
 ;; TODO: +a:b $(cwd)/a/b/.txt
 ;;       [[a:b]] $(cwd)/a/b.txt should just work (?)
 ;;       deal with spaces
 (defun zw-wiki2path (zp)
   "Transform zim link ZP (':a:b') to file path /root/a/b.txt ."
   (let*
-      ((zr (concat zim-root "/" ))
+      ((zr (concat zw-root "/" ))
        (zp (replace-regexp-in-string "^\\+" "" zp))
        (zp (replace-regexp-in-string "^:+" zr zp))
        (zp (replace-regexp-in-string ":+" "/"  zp))
@@ -94,7 +113,7 @@
   (let*
       ((zp (replace-regexp-in-string "^./" "+" zp)) ; relative is +
        (zp (replace-regexp-in-string ".txt" "" zp)) ; no extension
-       (zp (replace-regexp-in-string (concat "^" zim-root) ":" zp)) ; root
+       (zp (replace-regexp-in-string (concat "^" zw-root) ":" zp)) ; root
        (zp (replace-regexp-in-string "/" ":"  zp)) ; all slashes to :
        ; add [] -- done by zw-mklink
        ;(zp (replace-regexp-in-string "^" "["  zp))
@@ -272,11 +291,11 @@
     (define-key map (kbd "C-c C-n") 'zw-insert-current-at-now) ; insert cur page into now page (and go there)
 
     ; tree 
-    (define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
-    (define-key map (kbd "C-c T")   'neotree-find)    ; find thing in tree
+    ;(define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
+    ;(define-key map (kbd "C-c T")   'neotree-find)    ; find thing in tree
 
     ; org mode theft
-    (define-key map (kbd "M-RET")   'org-insert-item)    ; insert new list item
+    ;(define-key map (kbd "M-RET")   'org-insert-item)    ; insert new list item
 
     map)
    "Keymap for zw-mode.")
@@ -288,7 +307,7 @@
   (use-local-map zw-mode-map) ; unnecessary?
 
   ; deft -- probably want to use helm-ag instead
-  (set (make-local-variable 'deft-directory) zim-root)
+  (set (make-local-variable 'deft-directory) zw-root)
   (set (make-local-variable 'deft-recursive) t)
   (set (make-local-variable 'deft-strip-summary-regexp)
         (concat "^\\(Content-Type.*\n*\\)?"
@@ -302,22 +321,21 @@
 
 
 ; quick tests -- because earlier did something dumb
-(ert-deftest mklink-full () (should (= (zw-mklink "foo:bar" "baz") "[[foo:bar|baz]]")))
-(ert-deftest mklink-path () (should (= (zw-mklink "foo:bar") "[[foo:bar]]")))
+(ert-deftest zw-test-mklink-full () (should (= (zw-mklink "foo:bar" "baz") "[[foo:bar|baz]]")))
+(ert-deftest zw-test-mklink-path () (should (= (zw-mklink "foo:bar") "[[foo:bar]]")))
 
 
 ;; TODO:
 ;;  * agenda "[ ] task [d: yyyy-mm-dd]"
 ;;  * backlink collection (use sqlitedb? zimwiki uses?)
 ;;  * tags
-;;  * 
 
 ;; prettify headers?
-;; https://github.com/sabof/org-bullets/blob/master/org-bullets.el
+; https://github.com/sabof/org-bullets/blob/master/org-bullets.el
 
-; dont use deft, use helm-ag instead
+;; look at deft instead of helm-ag 
 ; (unload-feature 'deft t)
-; (setq deft-directory zim-root)
+; (setq deft-directory zw-root)
 ; (setq deft-recursive t)
 ; (setq deft-strip-summary-regexp
 ;       (concat "^\\(Content-Type.*\n*\\)?"
@@ -329,3 +347,5 @@
 ; 
 ; ; get out of evilmode
 ; ; http://huxiaoxing.com/setup/emacs.html#org086e564
+
+;;; zw-mode.el ends here
