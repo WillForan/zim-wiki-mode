@@ -3,7 +3,7 @@
 ;; URL: https://github.com/WillForan/zw-mode
 ;; Author: Will Foran <willforan+zw-mode@gmail.com>
 ;; Keywords: outlines
-;; Package-Requires: ((emacs "25") (helm-ag "0.58") (helm-projectile "0.14.0") (ffap "0"))
+;; Package-Requires: ((emacs "25") (helm-ag "0.58") (helm-projectile "0.14.0"))
 ;; Version: 0.0.1
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 ;; GNU General Public License for more details.
 
 ;;; Commentary:
-;; Edit zim wiki txt files within emacs
+;; Edit zim wiki txt files within Emacs
 ;
 ; ffap code from:
 ;   https://www.reddit.com/r/emacs/comments/676r5b/how_to_stop_findfileatprompting_when_there_is_a/
@@ -41,7 +41,7 @@
 :link '(url-link "http://zim-wiki.org"))
 
 (defcustom zw-root "/home/foranw/notes/PersonalWiki"
-  "The root folder for the zim wiki notebook"
+  "The root folder for the zim wiki notebook."
   :group 'zw
   :type 'string
  )
@@ -58,12 +58,12 @@
 
 
 (defun zw-now-page ()
-  "What is the path to the page for this time"
+  "What is the path to the page for this time."
   (let ((datestr (format-time-string zw-journal-datestr)))
 	(concat zw-root "/" datestr)))
 
 (defun zw-goto-now ()
-  "Go to the journal page for now"
+  "Go to the journal page for now."
   (interactive)
   (switch-to-buffer (find-file-noselect (zw-now-page)))
   ; TODO: if empyt buffer, add date template? have zw-insert-header, but it wont be date
@@ -78,12 +78,12 @@
 )
 
 (defun zw-mklink (path &optional text)
-  "Make a link from a PATH with optional TEXT. [[path]] or [[path|text]]"
+  "Make a link from a PATH with optional TEXT: [[path]] or [[path|text]]."
   (let* ((text (if text (concat "|" text) "")))
    (concat "[[" path text "]]")))
 
 (defun zw-link-now ()
-  "link to current day"
+  "Link to current day."
   (zw-mklink
      (zw-path2wiki (zw-now-page))
      (format-time-string zw-now-disp)))
@@ -109,7 +109,7 @@
 )
 
 (defun zw-path2wiki (zp)
-  "Transform path P ('./a/b.txt') to wike path."
+  "Transform path ZP ('./a/b.txt') to wike path."
   (let*
       ((zp (replace-regexp-in-string "^./" "+" zp)) ; relative is +
        (zp (replace-regexp-in-string ".txt" "" zp)) ; no extension
@@ -123,7 +123,7 @@
     zp))
 
 (defun zw-insert-now-link ()
-  "Insert now string in current buffer"
+  "Insert now string in current buffer."
   (interactive)
   (insert (zw-link-now))
 )
@@ -134,7 +134,7 @@
   (let ((cur (zw-path2wiki (buffer-file-name))))
     (progn
       (zw-goto-now)
-      ; go to end 
+      ; go to end
       (goto-char (point-max)) ; TODO: change for week -- search for week dayname
       (insert "\n")
       (insert (zw-mklink cur)))))
@@ -155,7 +155,7 @@
     (zw-mode )))
 
 (defun zw-ffap-below ()
-  "open a link in new window below current"
+  "Open a link in new window below current."
   (interactive)
   (with-selected-window (split-window-below) (zw-ffap))
 )
@@ -168,21 +168,21 @@
   (read-only-mode))
 
 
-; find a page 
+; find a page
 (defun zw-helm-projectile ()
-  "go to a file using helm-projectile (req. notebook in VCS)"
+  "Go to a file using helm-projectile (requires notebook in VCS)."
   (interactive)
   (helm-projectile)
   (zw-mode))
 
 ; find a page but dont go there, just insert it
 (defun zw-buffer-to-link (buffer)
-  "make a link of a given buffer"
+  "Make a link of a given BUFFER."
   (zw-mklink (zw-path2wiki (expand-file-name (buffer-file-name buffer))))
 )
 
 (defun zw-buffer-close-insert (cur)
-   "go away from buffer created soley to get link. probably a bad idea"
+   "Go away from CUR buffer created soley to get link.  Probably a bad idea."
   ; TODO: find a way to restore buffer list. maybe dont kill the buffer incase it was already open?
   (let* ((res (current-buffer)))
    ;(switch-to-buffer cur) ; go back to where we are told
@@ -195,8 +195,8 @@
 
 ;; search/projectile insert results
 (defun zw-insert-helm-projectile ()
-  "use projectile to insert on the current page.
-   opens projectile buffer before switching back"
+  "Use projectile to insert on the current page.
+Opens projectile buffer before switching back"
   (interactive)
   (setq cur (current-buffer))
   (zw-helm-projectile)
@@ -214,7 +214,7 @@
 ; wrap in a link
 ; TODO: at-point for 'filename does not catpure + but does get :
 (defun zw-link-wrap ()
-  "wrap current word as link"
+  "Wrap current word as link."
   (interactive)
   (let*
       ((bounds (bounds-of-thing-at-point 'filename))
@@ -228,7 +228,7 @@
       )))
   
 (defun zw-insert-header ()
-  "insert header on a new page"
+  "Insert header on a new page."
   (interactive)
   (goto-char 0)
   (insert (concat
@@ -239,7 +239,7 @@
       (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))
       " ======\n"
       "Created: " (format-time-string "%A %d %B %Y") "\n";Created Thursday 17 May 2018
-      )) 
+      ))
  )
 
 (defun zw-deft ()
@@ -251,18 +251,18 @@
 
 
 (defun zw-buffer-path-to-kill-ring ()
-  "put the current file full path onto the kill ring"
+  "Put the current file full path onto the kill ring."
   (interactive)
   (kill-new (expand-file-name (buffer-file-name)))
 )
 
 (defun zw-insert-kill-ring-as-link ()
-  "put the current file full path onto the kill ring"
+  "Put the current file full path onto the kill ring."
   (interactive)
   (insert (zw-mklink (zw-path2wiki (current-kill 0))))
 )
 (defun zw-insert-prev-buffer-link ()
-   "link previous buffer path as wiki"
+   "Link previous buffer path as wiki."
    (interactive)
    (insert (zw-buffer-to-link (other-buffer (current-buffer) 1)))
 )
@@ -290,7 +290,7 @@
     (define-key map (kbd "C-c N")   'zw-insert-now-link); link to curret date/time
     (define-key map (kbd "C-c C-n") 'zw-insert-current-at-now) ; insert cur page into now page (and go there)
 
-    ; tree 
+    ; tree
     ;(define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
     ;(define-key map (kbd "C-c T")   'neotree-find)    ; find thing in tree
 
@@ -313,7 +313,7 @@
         (concat "^\\(Content-Type.*\n*\\)?"
   	      "\\(Wiki-Format:.*\n*\\)?"
   	      "\\(Creation-Date:.*\n*\\)?"
-  	      "\\( *======.*\n\\)?\\(Created .*\n*\\)?") ) 
+  	      "\\( *======.*\n\\)?\\(Created .*\n*\\)?") )
   (set (make-local-variable 'deft-use-filename-as-title) t)
 )
 
@@ -333,7 +333,7 @@
 ;; prettify headers?
 ; https://github.com/sabof/org-bullets/blob/master/org-bullets.el
 
-;; look at deft instead of helm-ag 
+;; look at deft instead of helm-ag
 ; (unload-feature 'deft t)
 ; (setq deft-directory zw-root)
 ; (setq deft-recursive t)

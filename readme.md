@@ -35,7 +35,7 @@ N.B.
 ## Install
 1. install emacs packages `ffap`, `dokuwiki-mode`, `helm-ag`, and `helm-projectile`
 2. put [`zw-mode.el`](zw-mode.el?raw=true) within your load-path and load it.
-3. customize `zim-root` to your zim wiki notebook location.
+3. customize `zw-root` to your zim wiki notebook location.
 4. start wiki-ing with `M-x zw-goto-now`
 
 
@@ -56,7 +56,7 @@ copy and evalute (`M-x eval-buffer`) the following lines
 ; add functions temporarily install
 (eval-buffer)
 ; set path to your zim wiki
-(setq zim-root "/path/to/your/zimwiki")
+(setq zw-root "/path/to/your/zimwiki")
 ; start it up
 (zw-goto-now)
 ```
@@ -73,7 +73,7 @@ curl  "https://github.com/WillForan/zw-mode/blob/master/zw-mode.el?raw=true" > ~
   :load-path "~/path/to/zw-mode"
   :bind ("C-c n" . zw-goto-now)
   :init 
-    (setq zim-root "~/path/to/wiki")
+    (setq zw-root "~/path/to/wiki")
     (setq zw-jounal-datestr "Calendar/%Y/Week_%02V.txt") ; see: C-h f format-time-string
 )
 ```
