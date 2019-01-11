@@ -111,8 +111,18 @@
   (let*
       (
        (zp (replace-regexp-in-string "^\\./" "+" zp)) ; relative is +
-       (zp (replace-regexp-in-string (concat "^" zw-root) ":" zp)) ; root
-       (zp (replace-regexp-in-string (concat "^" (expand-file-name zw-root)) ":" zp)) ; root
+
+       ; various ways the file to be linked can have root in it:
+       ;  * normal: /home/b/blah
+       ;  * home alias: ~/b/blah
+       ;  * symlink: ~/b/blah -> /emulated/0/storage/blah
+       (zp (replace-regexp-in-string (concat "^" zw-root) ":" zp))
+       (zp (replace-regexp-in-string
+	    (concat "^" (expand-file-name zw-root)) ":" zp))
+       (zp (replace-regexp-in-string
+	    (concat "^" (expand-file-name (file-truename zw-root)))
+	    ":" zp))
+       ; no .txt,  / becomes :, no repeat :
        (zp (replace-regexp-in-string ".txt" "" zp)) ; no extension
        (zp (replace-regexp-in-string "/" ":"  zp)) ; all slashes to :
        (zp (replace-regexp-in-string ":+" ":"  zp)) ; replace extra :'s
