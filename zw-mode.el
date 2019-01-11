@@ -3,7 +3,7 @@
 ;; URL: https://github.com/WillForan/zw-mode
 ;; Author: Will Foran <willforan+zw-mode@gmail.com>
 ;; Keywords: outlines
-;; Package-Requires: ((emacs "25") (helm-ag "0.58") (helm-projectile "0.14.0"))
+;; Package-Requires: ((emacs "25") (helm-ag "0.58") (helm-projectile "0.14.0") (dokuwiki-mode "0.1.1"))
 ;; Version: 0.0.1
 
 ;; This program is free software; you can redistribute it and/or modify
@@ -110,14 +110,11 @@
   "Transform path ZP ('./a/b.txt') to wike path."
   (let*
       (
-       (zp (replace-regexp-in-string "^./" "+" zp)) ; relative is +
-       (zp (replace-regexp-in-string (concat "^" (expand-file-name zw-root)) ":" zp)) ; root
+       (zp (replace-regexp-in-string "^\\./" "+" zp)) ; relative is +
        (zp (replace-regexp-in-string (concat "^" zw-root) ":" zp)) ; root
+       (zp (replace-regexp-in-string (concat "^" (expand-file-name zw-root)) ":" zp)) ; root
        (zp (replace-regexp-in-string ".txt" "" zp)) ; no extension
        (zp (replace-regexp-in-string "/" ":"  zp)) ; all slashes to :
-       ; add [] -- done by zw-mklink
-       ;(zp (replace-regexp-in-string "^" "["  zp))
-       ;(zp (replace-regexp-in-string "$" "]"  zp)))
        (zp (replace-regexp-in-string ":+" ":"  zp)) ; replace extra :'s
        )
     zp))
@@ -295,8 +292,8 @@ Opens projectile buffer before switching back"
 
 (define-derived-mode zw-mode text-mode "zw"
   "Major mode for eding zim wiki."
-  (dokuwiki-mode)             ; start with wikimode
-  (flyspell-mode-on)
+  (dokuwiki-mode)             ; start with wiki mode
+  (flyspell-mode)
   (use-local-map zw-mode-map) ; unnecessary?
 
 )
@@ -310,14 +307,14 @@ Opens projectile buffer before switching back"
 
 (ert-deftest zw-test-path2wiki ()
   (let ((zw-root "/a/b"))
-    (should (string= (zw-path2wiki "./c/d") "+c:d"))
+    (should (string= (zw-path2wiki "./a/b") "+a:b"))
     (should (string= (zw-path2wiki "/a/b/c/d") ":c:d"))
-    (should (string= (zw-path2wiki "/a/b/c/d.txt") ":c:d"))))
+    (should (string= (zw-path2wiki "/a/b/e/f.txt") ":e:f"))))
 
 (ert-deftest zw-test-path2wiki-tilda ()
   (let ((zw-root "~/a/b"))
     (should (string= (zw-path2wiki (expand-file-name "~/a/b/c/d")) ":c:d"))
-    (should (string= (zw-path2wiki "~/a/b/e/f") ":e:f"))))
+    (should (string= (zw-path2wiki "~/a/b/y/z") ":y:z"))))
 
 ;; TODO:
 ;;  * agenda "[ ] task [d: yyyy-mm-dd]"
