@@ -28,8 +28,6 @@
 
 ;; configure other packages
 (require 'ffap)
-(require 'helm-ag)
-(require 'helm-projectile)
 ;(require 'org-mode)
 ;(require 'neotree)
 
@@ -111,9 +109,11 @@
 (defun zw-path2wiki (zp)
   "Transform path ZP ('./a/b.txt') to wike path."
   (let*
-      ((zp (replace-regexp-in-string "^./" "+" zp)) ; relative is +
-       (zp (replace-regexp-in-string ".txt" "" zp)) ; no extension
+      (
+       (zp (replace-regexp-in-string "^./" "+" zp)) ; relative is +
+       (zp (replace-regexp-in-string (concat "^" (expand-file-name zw-root)) ":" zp)) ; root
        (zp (replace-regexp-in-string (concat "^" zw-root) ":" zp)) ; root
+       (zp (replace-regexp-in-string ".txt" "" zp)) ; no extension
        (zp (replace-regexp-in-string "/" ":"  zp)) ; all slashes to :
        ; add [] -- done by zw-mklink
        ;(zp (replace-regexp-in-string "^" "["  zp))
@@ -242,13 +242,6 @@ Opens projectile buffer before switching back"
       ))
  )
 
-(defun zw-deft ()
-  "Deft search without evil mode."
-  (interactive)
-  (deft)
-  (evil-insert-state nil)
-)
-
 
 (defun zw-buffer-path-to-kill-ring ()
   "Put the current file full path onto the kill ring."
@@ -306,24 +299,25 @@ Opens projectile buffer before switching back"
   (flyspell-mode-on)
   (use-local-map zw-mode-map) ; unnecessary?
 
-  ; deft -- probably want to use helm-ag instead
-  (set (make-local-variable 'deft-directory) zw-root)
-  (set (make-local-variable 'deft-recursive) t)
-  (set (make-local-variable 'deft-strip-summary-regexp)
-        (concat "^\\(Content-Type.*\n*\\)?"
-  	      "\\(Wiki-Format:.*\n*\\)?"
-  	      "\\(Creation-Date:.*\n*\\)?"
-  	      "\\( *======.*\n\\)?\\(Created .*\n*\\)?") )
-  (set (make-local-variable 'deft-use-filename-as-title) t)
 )
 
 (provide 'zw-mode)
 
 
 ; quick tests -- because earlier did something dumb
-(ert-deftest zw-test-mklink-full () (should (= (zw-mklink "foo:bar" "baz") "[[foo:bar|baz]]")))
-(ert-deftest zw-test-mklink-path () (should (= (zw-mklink "foo:bar") "[[foo:bar]]")))
+(ert-deftest zw-test-mklink-full () (should (string= (zw-mklink "foo:bar" "baz") "[[foo:bar|baz]]")))
+(ert-deftest zw-test-mklink-path () (should (string= (zw-mklink "foo:bar") "[[foo:bar]]")))
 
+(ert-deftest zw-test-path2wiki ()
+  (let ((zw-root "/a/b"))
+    (should (string= (zw-path2wiki "./c/d") "+c:d"))
+    (should (string= (zw-path2wiki "/a/b/c/d") ":c:d"))
+    (should (string= (zw-path2wiki "/a/b/c/d.txt") ":c:d"))))
+
+(ert-deftest zw-test-path2wiki-tilda ()
+  (let ((zw-root "~/a/b"))
+    (should (string= (zw-path2wiki (expand-file-name "~/a/b/c/d")) ":c:d"))
+    (should (string= (zw-path2wiki "~/a/b/e/f") ":e:f"))))
 
 ;; TODO:
 ;;  * agenda "[ ] task [d: yyyy-mm-dd]"
@@ -332,20 +326,5 @@ Opens projectile buffer before switching back"
 
 ;; prettify headers?
 ; https://github.com/sabof/org-bullets/blob/master/org-bullets.el
-
-;; look at deft instead of helm-ag
-; (unload-feature 'deft t)
-; (setq deft-directory zw-root)
-; (setq deft-recursive t)
-; (setq deft-strip-summary-regexp
-;       (concat "^\\(Content-Type.*\n*\\)?"
-; 	      "\\(Wiki-Format:.*\n*\\)?"
-; 	      "\\(Creation-Date:.*\n*\\)?"
-; 	      "\\( *======.*\nCreated .*\n*\\)?") )
-; (setq deft-use-filename-as-title t)
-; (require 'deft)
-; 
-; ; get out of evilmode
-; ; http://huxiaoxing.com/setup/emacs.html#org086e564
 
 ;;; zw-mode.el ends here
