@@ -138,13 +138,13 @@
 (defun zimwiki-insert-current-at-now ()
   "Insert current page into now page (and go to now page)."
   (interactive)
-  (let ((bcur (zimwiki-path2wiki (buffer-file-name))))
+  (let ((cur (zimwiki-path2wiki (buffer-file-name))))
     (progn
       (zimwiki-goto-now)
       ; go to end
       (goto-char (point-max)) ; TODO: change for week -- search for week dayname
       (insert "\n")
-      (insert (zimwiki-mklink bcur)))))
+      (insert (zimwiki-mklink cur)))))
 
 
 ;; at point
@@ -188,12 +188,12 @@
   (zimwiki-mklink (zimwiki-path2wiki (expand-file-name (buffer-file-name buffer))))
 )
 
-(defun zimwiki-buffer-close-insert (bcur)
+(defun zimwiki-buffer-close-insert (cur)
    "Go away from CUR buffer created soley to get link.  Probably a bad idea."
   ; TODO: find a way to restore buffer list. maybe dont kill the buffer incase it was already open?
   (let* ((res (current-buffer)))
    ;(switch-to-buffer cur) ; go back to where we are told
-   (if (not (string= (buffer-file-name res) (buffer-file-name bcur)))
+   (if (not (string= (buffer-file-name res) (buffer-file-name cur)))
     (progn (kill-buffer res) ; go back by killing buffer we just created
            (insert (zimwiki-buffer-to-link res))
 	   ))
@@ -205,17 +205,17 @@
   "Use projectile to insert on the current page.
 Opens projectile buffer before switching back"
   (interactive)
-  (setq bcur (current-buffer))
-  (zimwiki-helm-projectile)
-  (zimwiki-buffer-close-insert bcur)
+  (let* ((cur (current-buffer)))
+      (zimwiki-helm-projectile)
+      (zimwiki-buffer-close-insert cur))
 )
 
 (defun zimwiki-insert-search ()
   "Search zim notebook with ag."
   (interactive)
-  (let* ((bcur (current-buffer)))
+  (let* ((cur (current-buffer)))
     (zimwiki-search)
-    (zimwiki-buffer-close-insert bcur))
+    (zimwiki-buffer-close-insert cur))
 )
 
 ; wrap in a link
@@ -300,7 +300,7 @@ Opens projectile buffer before switching back"
     map)
    "Keymap for ‘zimwiki-mode’.")
 
-(define-derived-mode zimwiki-mode text-mode "zimwiki-mode"
+(define-derived-mode zimwiki-mode text-mode "zimwiki"
   "Major mode for eding zim wiki."
   (dokuwiki-mode)             ; start with wiki mode
   (flyspell-mode)
