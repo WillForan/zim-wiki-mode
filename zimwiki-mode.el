@@ -138,13 +138,13 @@
 (defun zimwiki-insert-current-at-now ()
   "Insert current page into now page (and go to now page)."
   (interactive)
-  (let ((cur (zimwiki-path2wiki (buffer-file-name))))
+  (let ((bcur (zimwiki-path2wiki (buffer-file-name))))
     (progn
       (zimwiki-goto-now)
       ; go to end
       (goto-char (point-max)) ; TODO: change for week -- search for week dayname
       (insert "\n")
-      (insert (zimwiki-mklink cur)))))
+      (insert (zimwiki-mklink bcur)))))
 
 
 ;; at point
@@ -169,7 +169,7 @@
 
 ;; with selection?
 (defun zimwiki-vfap (&optional wikipath)
-  "Read only mode zimwiki-ffap WIKIPATH?"
+  "Read only mode ‘zimwiki-ffap’ WIKIPATH?"
   (interactive)
   (zimwiki-ffap wikipath)
   (read-only-mode))
@@ -177,7 +177,7 @@
 
 ; find a page
 (defun zimwiki-helm-projectile ()
-  "Go to a file using helm-projectile (requires notebook in VCS)."
+  "Go to a file using ‘helm-projectile’ (requires notebook in VCS)."
   (interactive)
   (helm-projectile)
   (zimwiki-mode))
@@ -188,12 +188,12 @@
   (zimwiki-mklink (zimwiki-path2wiki (expand-file-name (buffer-file-name buffer))))
 )
 
-(defun zimwiki-buffer-close-insert (cur)
+(defun zimwiki-buffer-close-insert (bcur)
    "Go away from CUR buffer created soley to get link.  Probably a bad idea."
   ; TODO: find a way to restore buffer list. maybe dont kill the buffer incase it was already open?
   (let* ((res (current-buffer)))
    ;(switch-to-buffer cur) ; go back to where we are told
-   (if (not (string= (buffer-file-name res) (buffer-file-name cur)))
+   (if (not (string= (buffer-file-name res) (buffer-file-name bcur)))
     (progn (kill-buffer res) ; go back by killing buffer we just created
            (insert (zimwiki-buffer-to-link res))
 	   ))
@@ -205,17 +205,17 @@
   "Use projectile to insert on the current page.
 Opens projectile buffer before switching back"
   (interactive)
-  (setq cur (current-buffer))
+  (setq bcur (current-buffer))
   (zimwiki-helm-projectile)
-  (zimwiki-buffer-close-insert cur)
+  (zimwiki-buffer-close-insert bcur)
 )
 
 (defun zimwiki-insert-search ()
   "Search zim notebook with ag."
   (interactive)
-  (let* ((cur (current-buffer)))
+  (let* ((bcur (current-buffer)))
     (zimwiki-search)
-    (zimwiki-buffer-close-insert cur))
+    (zimwiki-buffer-close-insert bcur))
 )
 
 ; wrap in a link
@@ -298,9 +298,9 @@ Opens projectile buffer before switching back"
     ;(define-key map (kbd "M-RET")   'org-insert-item)    ; insert new list item
 
     map)
-   "Keymap for zimwiki-mode.")
+   "Keymap for ‘zimwiki-mode’.")
 
-(define-derived-mode zimwiki-mode text-mode "zimwiki"
+(define-derived-mode zimwiki-mode text-mode "zimwiki-mode"
   "Major mode for eding zim wiki."
   (dokuwiki-mode)             ; start with wiki mode
   (flyspell-mode)
