@@ -28,8 +28,6 @@
 
 ;; configure other packages
 (require 'ffap)
-;(require 'org-mode)
-;(require 'neotree)
 
 (defgroup zimwiki nil
   "Major mode for a zim wiki notebook (dokuwiki derivitive)."
@@ -271,24 +269,24 @@ Opens projectile buffer before switching back"
 (defvar zimwiki-mode-map
   (let ((map (make-sparse-keymap)))
     ; go places
-    (define-key map (kbd "C-c f")     'zimwiki-helm-projectile); go to a page by searching file names
+    (define-key map (kbd "C-c M-f")   'zimwiki-helm-projectile); go to a page by searching file names
     (define-key map (kbd "C-c C-f")   'zimwiki-search)         ; find in all of notebook
     (define-key map (kbd "C-c RET")   'zimwiki-ffap)           ; go to link
     (define-key map (kbd "C-c M-RET") 'zimwiki-ffap-below)     ; go to link in new window
 
     ; make links
-    (define-key map (kbd "C-c l")   'zimwiki-insert-helm-projectile); 
+    (define-key map (kbd "C-c M-l") 'zimwiki-insert-helm-projectile); 
     (define-key map (kbd "C-c C-l") 'zimwiki-insert-search)         ; 
 
-    (define-key map (kbd "C-c w")   'zimwiki-link-wrap)      ; a:b -> [[a:b]]
-    (define-key map (kbd "C-c y")   'zimwiki-buffer-path-to-kill-ring) ; copy current file path
-    (define-key map (kbd "C-c p")   'zimwiki-insert-kill-ring-as-link) ; paste as a link
+    (define-key map (kbd "C-c M-w") 'zimwiki-link-wrap)      ; a:b -> [[a:b]]
+    (define-key map (kbd "C-c M-y") 'zimwiki-buffer-path-to-kill-ring) ; copy current file path
+    (define-key map (kbd "C-c M-p") 'zimwiki-insert-kill-ring-as-link) ; paste as a link
     (define-key map (kbd "C-c C-p") 'zimwiki-insert-prev-buffer-link) ; buffer before this one as a wiki link
 
     ;date/time
-    (define-key map (kbd "C-c n")   'zimwiki-goto-now)       ; go to now page
-    (define-key map (kbd "C-c N")   'zimwiki-insert-now-link); link to curret date/time
-    (define-key map (kbd "C-c C-n") 'zimwiki-insert-current-at-now) ; insert cur page into now page (and go there)
+    (define-key map (kbd "C-c C-n") 'zimwiki-goto-now)       ; go to now page
+    (define-key map (kbd "C-c C-N") 'zimwiki-insert-now-link); link to curret date/time
+    (define-key map (kbd "C-c M-n") 'zimwiki-insert-current-at-now) ; insert cur page into now page (and go there)
 
     ; tree
     ;(define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
