@@ -28,7 +28,11 @@
 
 ;; configure other packages
 (require 'ffap)
+(require 'helm-projectile)
+(require 'helm-ag)
+(require 'dokuwiki-mode)
 
+;; setings
 (defgroup zimwiki nil
   "Major mode for a zim wiki notebook (dokuwiki derivitive)."
   :group 'text
@@ -52,6 +56,7 @@
   :type 'string
   )
 
+;; Functions
 
 (defun zimwiki-now-page ()
   "What is the path to the page for this time."
@@ -309,7 +314,7 @@ Opens projectile buffer before switching back"
 (provide 'zimwiki-mode)
 
 
-; quick tests -- because earlier did something dumb
+;; tests
 (ert-deftest zimwiki-test-mklink-full () (should (string= (zimwiki-mklink "foo:bar" "baz") "[[foo:bar|baz]]")))
 (ert-deftest zimwiki-test-mklink-path () (should (string= (zimwiki-mklink "foo:bar") "[[foo:bar]]")))
 
@@ -325,6 +330,7 @@ Opens projectile buffer before switching back"
     (should (string= (zimwiki-path2wiki "~/a/b/y/z") ":y:z"))))
 
 ;; TODO:
+;;  * link-hint dokuwiki syntax
 ;;  * agenda "[ ] task [d: yyyy-mm-dd]"
 ;;  * backlink collection (use sqlitedb? zimwiki uses?)
 ;;  * tags
