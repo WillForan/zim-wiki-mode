@@ -1,18 +1,18 @@
-# zimwiki-mode
+# zim-wiki-mode
 An elisp package for editing [zim-wiki](http://zim-wiki.org) in emacs.
 
-This package primarily provides convenient page linking and journaling by extending `dokuwiki-mode` and wrapping functions around `helm-projectile` and `helm-ag`.
+This package primarily provides convenient page linking and journaling by extending `dokuwiki-mode` and wrapping functions around `helm-projectile`, `helm-ag`, and `link-hint`. A hydra menu is provided with `pretty-hydra`.
 
 ### Motivation
-Even though any editor can edit zim's plain text files, none are particularly efficient. Hopefully, `zimwiki-mode` reduces that friction in emacs.
+Even though any editor can edit zim's plain text files, none are particularly efficient. Hopefully, `zim-wiki-mode` reduces that friction in emacs.
 
 ## Demo
-using zimwiki-mode with evil-mode and leuven theme
+using zim-wiki-mode with evil-mode and leuven theme
 
 ![demo gif](demo.gif?raw=true) 
 
-  0. <kbd>C-c n</kbd> go to the "now" page
-     * now page date format defined by `zimwiki-journal-datestr`
+  0. <kbd>C-c C-n</kbd> go to the "now" page
+     * now page date format defined by `zim-wiki-journal-datestr`
   1. <kbd>C-c l</kbd> create a new page in hierarchy by searching current tree 
      * via `helm-projectile`
   2. <kbd>C-c RET</kbd> follow the link we just created
@@ -34,15 +34,35 @@ N.B.
 
 ## Install
 1. install emacs packages `ffap`, `dokuwiki-mode`, `helm-ag`, and `helm-projectile`
-2. put [`zimwiki-mode.el`](zw-mode.el?raw=true) within your load-path and load it.
-3. customize `zimwiki-root` to your zim wiki notebook location.
-4. start wiki-ing with `M-x zimwiki-goto-now`
+2. put [`zim-wiki-mode.el`](zim-wiki-mode.el?raw=true) within your load-path and load it.
+3. customize `zim-wiki-root` to your zim wiki notebook location.
+4. start wiki-ing with `M-x zim-wiki-goto-now`
+
+### use-package 
+```
+curl  "https://github.com/WillForan/zim-wiki-mode/blob/master/zim-wiki-mode.el?raw=true" > ~/path/to/zim-wiki-mode.el
+```
+
+`~/.emacs` might look like
+
+```elisp
+(use-package zim-wiki-mode
+  :load-path "~/path/to/zim-wiki-mode.el"
+  :bind ("C-c C-n" . zim-wiki-goto-now)
+  :init
+    (add-hook 'zim-wiki-mode-hook 'flyspell-mode)
+  :config
+    (setq zim-wiki-root "~/notes/PersonalWiki")
+    (setq zim-wiki-journal-datestr "Calendar/%Y/%02m.txt")
+    (evil-leader/set-key-for-mode 'zim-wiki-mode "z" 'zim-wiki-hydra/body)
+)
+```
 
 
-### Try it 
+### Try it from *scratch*
 copy and evalute (`M-x eval-buffer`) the following lines
 ```elisp
-; install dependencies
+;; install dependencies
 (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
 (package-refresh-contents)
 (package-install 'ffap)
@@ -50,32 +70,17 @@ copy and evalute (`M-x eval-buffer`) the following lines
 (package-install 'helm-ag)
 (package-install 'helm-projectile) 
 (package-install 'flyspell-mode) 
+(package-install 'link-hint) 
+(package-install 'pretty-hydra) 
 
-; get -- maybe read over, be sure it's not going to add you to a botnet
-(browse-url-emacs "https://github.com/WillForan/zimwiki-mode/blob/master/zw-mode.el?raw=true")
-; add functions temporarily install
+;; get -- maybe read over, be sure it's not going to add you to a botnet
+(browse-url-emacs "https://github.com/WillForan/zim-wiki-mode/blob/master/zim-wiki-mode.el?raw=true")
+;; add functions temporarily install
 (eval-buffer)
-; set path to your zim wiki
-(setq zimwiki-root "/path/to/your/zimwiki")
-; start it up
-(zimwiki-goto-now)
-```
-
-### use-package 
-```
-curl  "https://github.com/WillForan/zimwiki-mode/blob/master/zw-mode.el?raw=true" > ~/path/to/zw-mode/zw-mode.el
-```
-
-`~/.emacs` might look like
-
-```elisp
-(use-package zimwiki-mode
-  :load-path "~/path/to/zimwiki-mode"
-  :bind ("C-c C-n" . zimwiki-goto-now)
-  :init 
-    (setq zimwiki-root "~/path/to/wiki")
-    (setq zimwiki-journal-datestr "Calendar/%Y/Week_%02V.txt") ; see: C-h f format-time-string
-)
+;; set path to your zim wiki
+(setq zim-wiki-root "/path/to/your/zim-wiki")
+;; start it up
+(zim-wiki-goto-now)
 ```
 
 
@@ -83,32 +88,35 @@ curl  "https://github.com/WillForan/zimwiki-mode/blob/master/zw-mode.el?raw=true
 
  * You should already have a notebook established with zim-wiki. 
  * This mode was developed with both the journal and version control plugins enabled.
- * At the very least, you will need to customize the root path variable to match the location of the zim wiki. If not using `use-package`, this can be set interactively like `M-x customize-group RET zimwiki-mode RET`
+ * At the very least, you will need to customize the root path variable to match the location of the zim wiki. If not using `use-package`, this can be set interactively like `M-x customize-group RET zim-wiki-mode RET`
 
 ## Keys
 Default keys. Rearranged and annotated output of `C-c ?`
 
 ```
+; menu
+C-c C-z      zim-wiki-hydra/body              see all the options
+
 ; go places
-C-c C-n		zimwiki-goto-now                 jump to now page
-C-c M-f		zimwiki-helm-projectile          go to page by title search
-C-c C-f		zimwiki-search                   go to page by content search
-C-c RET		zimwiki-ffap                     go to link cursor is over
-C-c M-RET	zimwiki-ffap-below               open link in new window below current
+C-c C-n		zim-wiki-goto-now                 jump to now page
+C-c M-f		zim-wiki-helm-projectile          go to page by title search
+C-c C-f		zim-wiki-search                   go to page by content search
+C-c RET		zim-wiki-ffap                     go to link cursor is over
+C-c M-RET	zim-wiki-ffap-below               open link in new window below current
 
 ; insert links
-C-c M-l		zimwiki-insert-helm-projectile   insert link by title searching
-C-c C-l		zimwiki-insert-search            insert link by filename/title search
-C-c C-N		zimwiki-insert-now-link          link now page on current page
-C-c M-w		zimwiki-link-wrap                wrap e.g a:b:c into [[a:b:c]]
+C-c M-l		zim-wiki-insert-helm-projectile   insert link by title searching
+C-c C-l		zim-wiki-insert-search            insert link by filename/title search
+C-c C-N		zim-wiki-insert-now-link          link now page on current page
+C-c M-w		zim-wiki-link-wrap                wrap e.g a:b:c into [[a:b:c]]
 
 ; link based on history
-C-c C-p		zimwiki-insert-prev-buffer-link  insert link on current page to previous buffer
-C-c M-y		zimwiki-buffer-path-to-kill-ring copy current buffer file name
-C-c M-p		zimwiki-insert-kill-ring-as-link paste filename as link
+C-c C-p		zim-wiki-insert-prev-buffer-link  insert link on current page to previous buffer
+C-c M-y		zim-wiki-buffer-path-to-kill-ring copy current buffer file name
+C-c M-p		zim-wiki-insert-kill-ring-as-link paste filename as link
 
 ; date operations
-C-c C-n		zimwiki-goto-now                 jump to now page
-C-c C-N		zimwiki-insert-now-link          link now page on current page
-C-c M-n		zimwiki-insert-current-at-now    put current page link on now page, go to now page
+C-c C-n		zim-wiki-goto-now                 jump to now page
+C-c C-N		zim-wiki-insert-now-link          link now page on current page
+C-c M-n		zim-wiki-insert-current-at-now    put current page link on now page, go to now page
 ```
