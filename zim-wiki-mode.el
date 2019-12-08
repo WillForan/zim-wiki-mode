@@ -43,18 +43,15 @@
 (defcustom zim-wiki-root (expand-file-name "~/notes/PersonalWiki")
   "The root folder for the zim wiki notebook."
   :group 'zim-wiki
-  :type 'string
- )
+  :type 'string)
 (defcustom zim-wiki-journal-datestr "Calendar/%Y/Week_%02V.txt"
   "Path as time format to journal pages."
   :group 'zim-wiki
-  :type 'string
-  )
+  :type 'string)
 (defcustom zim-wiki-now-disp "[d: %Y-%m-%d]"
   "How to insert date/time."
   :group 'zim-wiki
-  :type 'string
-  )
+  :type 'string)
 
 ;; Functions
 
@@ -131,8 +128,7 @@
 (defun zim-wiki-insert-now-link ()
   "Insert now string in current buffer."
   (interactive)
-  (insert (zim-wiki-link-now))
-)
+  (insert (zim-wiki-link-now)))
 
 (defun zim-wiki-insert-current-at-now ()
   "Insert current page into now page (and go to now page)."
@@ -349,7 +345,7 @@ Only search the range between just after the point and BOUND."
    "Keymap for ‘zim-wiki-mode’.")
 
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
-  "Major mode for eding zim wiki.")
+  "Major mode for editing zim wiki.")
 
 (provide 'zim-wiki-mode)
 
