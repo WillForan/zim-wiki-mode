@@ -313,26 +313,26 @@ Only search the range between just after the point and BOUND."
 (defvar zim-wiki-mode-map
   (let ((map (make-sparse-keymap)))
     ;; hydra overview
-    (define-key map (kbd "C-c C-z")   'zim-wiki-hydra/body)     ;; give all the options
+    (define-key map (kbd "C-c C-z")   #'zim-wiki-hydra/body)     ;; give all the options
     ;; go places
-    (define-key map (kbd "C-c M-f")   'zim-wiki-helm-projectile);; go to a page by searching file names
-    (define-key map (kbd "C-c C-f")   'zim-wiki-search)         ;; find in all of notebook
-    (define-key map (kbd "C-c RET")   'zim-wiki-ffap)           ;; go to link
-    (define-key map (kbd "C-c M-RET") 'zim-wiki-ffap-below)     ;; go to link in new window
+    (define-key map (kbd "C-c M-f")   #'zim-wiki-helm-projectile);; go to a page by searching file names
+    (define-key map (kbd "C-c C-f")   #'zim-wiki-search)         ;; find in all of notebook
+    (define-key map (kbd "C-c RET")   #'zim-wiki-ffap)           ;; go to link
+    (define-key map (kbd "C-c M-RET") #'zim-wiki-ffap-below)     ;; go to link in new window
 
     ;; make links
-    (define-key map (kbd "C-c M-l") 'zim-wiki-insert-helm-projectile)
-    (define-key map (kbd "C-c C-l") 'zim-wiki-insert-search)
+    (define-key map (kbd "C-c M-l") #'zim-wiki-insert-helm-projectile)
+    (define-key map (kbd "C-c C-l") #'zim-wiki-insert-search)
 
-    (define-key map (kbd "C-c M-w") 'zim-wiki-link-wrap)                ;; a:b -> [[a:b]]
-    (define-key map (kbd "C-c M-y") 'zim-wiki-buffer-path-to-kill-ring) ;; copy current file path
-    (define-key map (kbd "C-c M-p") 'zim-wiki-insert-kill-ring-as-link) ;; paste as a link
-    (define-key map (kbd "C-c C-p") 'zim-wiki-insert-prev-buffer-link)  ;; buffer before this one as a wiki link
+    (define-key map (kbd "C-c M-w") #'zim-wiki-link-wrap)                ;; a:b -> [[a:b]]
+    (define-key map (kbd "C-c M-y") #'zim-wiki-buffer-path-to-kill-ring) ;; copy current file path
+    (define-key map (kbd "C-c M-p") #'zim-wiki-insert-kill-ring-as-link) ;; paste as a link
+    (define-key map (kbd "C-c C-p") #'zim-wiki-insert-prev-buffer-link)  ;; buffer before this one as a wiki link
 
     ;; date/time
-    (define-key map (kbd "C-c C-n") 'zim-wiki-goto-now)              ;; go to now page
-    (define-key map (kbd "C-c C-N") 'zim-wiki-insert-now-link)       ;; link to curret date/time
-    (define-key map (kbd "C-c M-n") 'zim-wiki-insert-current-at-now) ;; insert cur page into now page (and go there)
+    (define-key map (kbd "C-c C-n") #'zim-wiki-goto-now)              ;; go to now page
+    (define-key map (kbd "C-c C-N") #'zim-wiki-insert-now-link)       ;; link to curret date/time
+    (define-key map (kbd "C-c M-n") #'zim-wiki-insert-current-at-now) ;; insert cur page into now page (and go there)
 
     ;; tree
     ;;(define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
