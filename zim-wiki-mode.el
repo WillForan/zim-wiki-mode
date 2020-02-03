@@ -1,3 +1,8 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2020-02-03T15:56:17-0500
+====== zim-wiki-mode ======
+Created: Monday 03 February 2020
 ;;; zim-wiki-mode.el --- Zim Desktop Wiki edit mode          -*- lexical-binding: t; -*-
 
 ;; URL: https://github.com/WillForan/zim-wiki-mode
@@ -44,7 +49,7 @@
   "The root folder for the zim wiki notebook."
   :group 'zim-wiki
   :type 'string)
-(defcustom zim-wiki-journal-datestr "Calendar/%Y/Week_%02V.txt"
+(defcustom zim-wiki-journal-datestr "Calendar/%G/Week_%02V.txt"
   "Path as time format to journal pages."
   :group 'zim-wiki
   :type 'string)
@@ -55,17 +60,21 @@
 
 ;; Functions
 
-(defun zim-wiki-now-page ()
-  "What is the path to the page for this time."
-  (let ((datestr (format-time-string zim-wiki-journal-datestr)))
+(defun zim-wiki-now-page (&optional time)
+  "What is the path to the page at TIME (default to now)."
+  (let ((datestr (format-time-string zim-wiki-journal-datestr time)))
 	(concat zim-wiki-root "/" datestr)))
 
-(defun zim-wiki-goto-now ()
-  "Go to the journal page for now."
+(defun zim-wiki-goto-now (&optional time)
+  "Go to the journal page for TIME (default to now)."
   (interactive)
-  (switch-to-buffer (find-file-noselect (zim-wiki-now-page)))
-  ;; TODO: if empty buffer, add date template? have zim-wiki-insert-header, but it wont be date
-  (zim-wiki-mode))
+  (switch-to-buffer (find-file-noselect (zim-wiki-now-page time)))
+  ;; see 
+  (zim-wiki-mode)
+  ;; if empty insert week template.
+  ;; TODO: will throw if not week. make month template?
+  (if (= (buffer-size) 0) (zim-wiki-week-template 5 time))
+ )
 
 (defun zim-wiki-search ()
   "Search zim notebook with ag."
@@ -250,6 +259,24 @@ Opens projectile buffer before switching back"
       "Created: " (format-time-string "%A %d %B %Y") "\n";Created Thursday 17 May 2018
       )))
 
+(defun zim-wiki-week-template (&optional n time)
+  "Gen week template for N (5) days at TIME (now)"
+  (interactive)
+  (if (not (string-match "%\[0-9\]*V" zim-wiki-journal-datestr))
+      (throw 'bad-call "not week datestr or file already exists"))
+  (let* ((n (if n n 5))
+	 (dseq (number-sequence 0 (- n 1)))
+         (header-level "===")
+         (dates (mapcar (lambda (x)
+			        (format-time-string "%A %B %02d"
+				  (time-add time (* x 86400))))
+	                dseq)))
+       (progn 
+	 (zim-wiki-ffap-open (zim-wiki-now-page time))
+         (dolist
+           (day dates)
+           (insert (concat header-level " " day " " header-level
+        	    "\n\n"))))))
 
 (defun zim-wiki-buffer-path-to-kill-ring ()
   "Put the current file full path onto the kill ring."
