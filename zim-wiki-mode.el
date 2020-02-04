@@ -1,15 +1,10 @@
-Content-Type: text/x-zim-wiki
-Wiki-Format: zim 0.4
-Creation-Date: 2020-02-03T15:56:17-0500
-====== zim-wiki-mode ======
-Created: Monday 03 February 2020
 ;;; zim-wiki-mode.el --- Zim Desktop Wiki edit mode          -*- lexical-binding: t; -*-
 
 ;; URL: https://github.com/WillForan/zim-wiki-mode
 ;; Author: Will Foran <willforan+zim-wiki-mode@gmail.com>
 ;; Keywords: outlines
 ;; Package-Requires: ((emacs "25") (helm-ag "0.58") (helm-projectile "0.14.0") (dokuwiki-mode "0.1.1") (link-hint "0.1") (pretty-hydra "0.2.2"))
-;; Version: 0.1.0
+;; Version: 0.1.1
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -43,7 +38,7 @@ Created: Monday 03 February 2020
   :group 'text
   :prefix "zim-wiki-"
   :tag "Zim-Wiki"
-:link '(url-link "http://zim-wiki.org"))
+  :link '(url-link "http://zim-wiki.org"))
 
 (defcustom zim-wiki-root (expand-file-name "~/notes/PersonalWiki")
   "The root folder for the zim wiki notebook."
@@ -69,12 +64,11 @@ Created: Monday 03 February 2020
   "Go to the journal page for TIME (default to now)."
   (interactive)
   (switch-to-buffer (find-file-noselect (zim-wiki-now-page time)))
-  ;; see 
+  ;; see
   (zim-wiki-mode)
   ;; if empty insert week template.
   ;; TODO: will throw if not week. make month template?
-  (if (= (buffer-size) 0) (zim-wiki-week-template 5 time))
- )
+  (if (= (buffer-size) 0) (zim-wiki-week-template 5 time)))
 
 (defun zim-wiki-search ()
   "Search zim notebook with ag."
@@ -260,7 +254,7 @@ Opens projectile buffer before switching back"
       )))
 
 (defun zim-wiki-week-template (&optional n time)
-  "Gen week template for N (5) days at TIME (now)"
+  "Gen week template for N (5) days at TIME (now)."
   (interactive)
   (if (not (string-match "%\[0-9\]*V" zim-wiki-journal-datestr))
       (throw 'bad-call "not week datestr or file already exists"))
@@ -271,7 +265,7 @@ Opens projectile buffer before switching back"
 			        (format-time-string "%A %B %02d"
 				  (time-add time (* x 86400))))
 	                dseq)))
-       (progn 
+       (progn
 	 (zim-wiki-ffap-open (zim-wiki-now-page time))
          (dolist
            (day dates)
@@ -310,6 +304,47 @@ Only search the range between just after the point and BOUND."
   :copy #'kill-new)
 
 (push 'link-hint-zim-wiki-link link-hint-types)
+
+;; company mode completion
+;; https://github.com/company-mode/company-mode/wiki/Writing-backends
+;; http://sixty-north.com/blog/writing-the-simplest-emacs-company-mode-backend
+(require 'cl-lib)
+
+(defvar zim-wiki-mode-company-keywords
+  "all the files we know about"
+  (mapcar (lambda (x)
+          (let ((p (zim-wiki-path2wiki x)))
+		    (list (replace-regexp-in-string ":" "/" p) p)))
+	  (directory-files-recursively zim-wiki-root "txt\$")))
+
+(defun zim-wiki-mode--make-candidate (candidate)
+  (let ((text (car candidate))
+        (meta (cadr candidate)))
+    (propertize text 'meta meta)))
+
+(defun zim-wiki-mode--candidates (prefix)
+  (let (res)
+    (dolist (item zim-wiki-mode-keywords)
+      (when (string-prefix-p prefix (car item))
+        (push (zim-wiki-mode--make-candidate item) res)))
+    res))
+
+(defun zim-wiki-mode--meta (candidate)
+  (format "This will use %s of %s"
+          (get-text-property 0 'meta candidate)
+          (substring-no-properties candidate)))
+
+(defun zim-wiki-mode--annotation (candidate)
+  (format " (%s)" (get-text-property 0 'meta candidate)))
+
+(defun zim-wiki-mode-complete (command &optional arg &rest ignored)
+  (interactive (list 'interactive))
+  (cl-case command
+    (interactive (company-begin-backend 'zim-wiki-mode-complete))
+    (prefix (company-grab-symbol))
+    (candidates (zim-wiki-mode--candidates arg))
+    (annotation (zim-wiki-mode--annotation arg))
+    (meta (zim-wiki-mode--meta arg))))
 
 
 ;; pretty hydra menu
