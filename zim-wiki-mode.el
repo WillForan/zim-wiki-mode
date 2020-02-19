@@ -91,11 +91,18 @@
 ;; TODO: +a:b $(cwd)/a/b/.txt
 ;;       [[a:b]] $(cwd)/a/b.txt should just work (?)
 ;;       deal with spaces
-(defun zim-wiki-wiki2path (zp)
-  "Transform zim link ZP (':a:b') to file path /root/a/b.txt ."
+(defun zim-wiki-wiki2path (zp &optional from)
+  "Transform zim link ZP (':a:b') to file path /root/a/b.txt.
+  '+' is relative to current buffer or FROM"
   (let*
-      ((zr (concat zim-wiki-root "/" ))
-       (zp (replace-regexp-in-string "^\\+" "" zp))
+      ((from (if (not from) (buffer-file-name) from)) 
+       ;; replace starging + with relative path of from
+       (zp (replace-regexp-in-string
+	    "^\\+"
+	    (replace-regexp-in-string "\\.txt\$" "/" from)
+	    zp))
+       (zr (concat zim-wiki-root "/" ))
+       ;; any number of starting : are root
        (zp (replace-regexp-in-string "^:+" zr zp))
        (zp (replace-regexp-in-string ":+" "/"  zp))
        ;; anything after a pipe
@@ -411,6 +418,16 @@ Only search the range between just after the point and BOUND."
 
 (provide 'zim-wiki-mode)
 
+
+;; TODO:
+;;  * agenda "[ ] task [d: yyyy-mm-dd]"
+;;  * backlink collection (use sqlitedb? zim-wiki uses?)
+;;  * tags
+
+;;  * prettify headers?
+;;    https://github.com/sabof/org-bullets/blob/master/org-bullets.el
+
+;;; zim-wiki-mode.el ends here
 
 ;; TODO:
 ;;  * agenda "[ ] task [d: yyyy-mm-dd]"
