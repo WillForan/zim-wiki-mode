@@ -43,18 +43,15 @@
 (defcustom zim-wiki-root (expand-file-name "~/notes/PersonalWiki")
   "The root folder for the zim wiki notebook."
   :group 'zim-wiki
-  :type 'string
- )
+  :type 'string)
 (defcustom zim-wiki-journal-datestr "Calendar/%Y/Week_%02V.txt"
   "Path as time format to journal pages."
   :group 'zim-wiki
-  :type 'string
-  )
+  :type 'string)
 (defcustom zim-wiki-now-disp "[d: %Y-%m-%d]"
   "How to insert date/time."
   :group 'zim-wiki
-  :type 'string
-  )
+  :type 'string)
 
 ;; Functions
 
@@ -131,8 +128,7 @@
 (defun zim-wiki-insert-now-link ()
   "Insert now string in current buffer."
   (interactive)
-  (insert (zim-wiki-link-now))
-)
+  (insert (zim-wiki-link-now)))
 
 (defun zim-wiki-insert-current-at-now ()
   "Insert current page into now page (and go to now page)."
@@ -317,26 +313,26 @@ Only search the range between just after the point and BOUND."
 (defvar zim-wiki-mode-map
   (let ((map (make-sparse-keymap)))
     ;; hydra overview
-    (define-key map (kbd "C-c C-z")   'zim-wiki-hydra/body)     ;; give all the options
+    (define-key map (kbd "C-c C-z")   #'zim-wiki-hydra/body)     ;; give all the options
     ;; go places
-    (define-key map (kbd "C-c M-f")   'zim-wiki-helm-projectile);; go to a page by searching file names
-    (define-key map (kbd "C-c C-f")   'zim-wiki-search)         ;; find in all of notebook
-    (define-key map (kbd "C-c RET")   'zim-wiki-ffap)           ;; go to link
-    (define-key map (kbd "C-c M-RET") 'zim-wiki-ffap-below)     ;; go to link in new window
+    (define-key map (kbd "C-c M-f")   #'zim-wiki-helm-projectile);; go to a page by searching file names
+    (define-key map (kbd "C-c C-f")   #'zim-wiki-search)         ;; find in all of notebook
+    (define-key map (kbd "C-c RET")   #'zim-wiki-ffap)           ;; go to link
+    (define-key map (kbd "C-c M-RET") #'zim-wiki-ffap-below)     ;; go to link in new window
 
     ;; make links
-    (define-key map (kbd "C-c M-l") 'zim-wiki-insert-helm-projectile)
-    (define-key map (kbd "C-c C-l") 'zim-wiki-insert-search)
+    (define-key map (kbd "C-c M-l") #'zim-wiki-insert-helm-projectile)
+    (define-key map (kbd "C-c C-l") #'zim-wiki-insert-search)
 
-    (define-key map (kbd "C-c M-w") 'zim-wiki-link-wrap)                ;; a:b -> [[a:b]]
-    (define-key map (kbd "C-c M-y") 'zim-wiki-buffer-path-to-kill-ring) ;; copy current file path
-    (define-key map (kbd "C-c M-p") 'zim-wiki-insert-kill-ring-as-link) ;; paste as a link
-    (define-key map (kbd "C-c C-p") 'zim-wiki-insert-prev-buffer-link)  ;; buffer before this one as a wiki link
+    (define-key map (kbd "C-c M-w") #'zim-wiki-link-wrap)                ;; a:b -> [[a:b]]
+    (define-key map (kbd "C-c M-y") #'zim-wiki-buffer-path-to-kill-ring) ;; copy current file path
+    (define-key map (kbd "C-c M-p") #'zim-wiki-insert-kill-ring-as-link) ;; paste as a link
+    (define-key map (kbd "C-c C-p") #'zim-wiki-insert-prev-buffer-link)  ;; buffer before this one as a wiki link
 
     ;; date/time
-    (define-key map (kbd "C-c C-n") 'zim-wiki-goto-now)              ;; go to now page
-    (define-key map (kbd "C-c C-N") 'zim-wiki-insert-now-link)       ;; link to curret date/time
-    (define-key map (kbd "C-c M-n") 'zim-wiki-insert-current-at-now) ;; insert cur page into now page (and go there)
+    (define-key map (kbd "C-c C-n") #'zim-wiki-goto-now)              ;; go to now page
+    (define-key map (kbd "C-c C-N") #'zim-wiki-insert-now-link)       ;; link to curret date/time
+    (define-key map (kbd "C-c M-n") #'zim-wiki-insert-current-at-now) ;; insert cur page into now page (and go there)
 
     ;; tree
     ;;(define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
@@ -349,7 +345,7 @@ Only search the range between just after the point and BOUND."
    "Keymap for ‘zim-wiki-mode’.")
 
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
-  "Major mode for eding zim wiki.")
+  "Major mode for editing zim wiki.")
 
 (provide 'zim-wiki-mode)
 
