@@ -46,8 +46,13 @@ curl  "https://github.com/WillForan/zim-wiki-mode/blob/master/zim-wiki-mode.el?r
 `~/.emacs` might look like
 
 ```elisp
+;; pull packges from repos not yet in e.g. melpa
+(use-package quelpa :ensure t 
+  :config
+    (quelpa '(zim-wiki-mode :fetcher github :repo "WillForan/zim-wiki-mode"))
+)
+;; setup wiki mode
 (use-package zim-wiki-mode
-  :load-path "~/path/to/zim-wiki-mode.el"
   :bind ("C-c C-n" . zim-wiki-goto-now)
   :init
     (add-hook 'zim-wiki-mode-hook 'flyspell-mode)
