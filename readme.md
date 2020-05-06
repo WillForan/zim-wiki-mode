@@ -40,7 +40,7 @@ N.B.
 
 ### use-package 
 ```
-curl  "https://github.com/WillForan/zim-wiki-mode/blob/master/zim-wiki-mode.el?raw=true" > ~/path/to/zim-wiki-mode.el
+curl  "https://raw.githubusercontent.com/WillForan/zim-wiki-mode/master/zim-wiki-mode.el" > ~/path/to/zim-wiki-mode.el
 ```
 
 `~/.emacs` might look like
