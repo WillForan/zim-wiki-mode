@@ -399,8 +399,8 @@ Only search the range between just after the point and BOUND."
     (define-key map (kbd "C-c M-P"  ) #'zim-wiki-insert-prev-buffer-link)  ;; buffer before this one as a wiki link
 
     ;; date/time
-    (define-key map (kbd "C-c C-n") #'zim-wiki-goto-now)              ;; go to now page
-    (define-key map (kbd "C-c C-N") #'zim-wiki-insert-now-link)       ;; link to curret date/time
+    (define-key map (kbd "C-c n") #'zim-wiki-goto-now)              ;; go to now page
+    (define-key map (kbd "C-c C-n") #'zim-wiki-insert-now-link)       ;; link to curret date/time
     (define-key map (kbd "C-c M-n") #'zim-wiki-insert-current-at-now) ;; insert cur page into now page (and go there)
 
     ;; tree
@@ -412,6 +412,11 @@ Only search the range between just after the point and BOUND."
 
     map)
    "Keymap for ‘zim-wiki-mode’.")
+
+;; if first line ends with x-zim-wiki use zim-wiki-mode
+;; most pages opened by shortcuts call mode manully.
+;; this is useful for e.g. neotree 
+(add-to-list 'magic-mode-alist '(".*x-zim-wiki" . zim-wiki-mode))
 
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
   "Major mode for editing zim wiki.")
