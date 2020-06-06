@@ -413,6 +413,11 @@ Only search the range between just after the point and BOUND."
     map)
    "Keymap for ‘zim-wiki-mode’.")
 
+;; if first line ends with x-zim-wiki use zim-wiki-mode
+;; most pages opened by shortcuts call mode manully.
+;; this is useful for e.g. neotree 
+(add-to-list 'magic-mode-alist '(".*x-zim-wiki" . zim-wiki-mode))
+
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
   "Major mode for editing zim wiki.")
 
