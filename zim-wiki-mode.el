@@ -3,8 +3,8 @@
 ;; URL: https://github.com/WillForan/zim-wiki-mode
 ;; Author: Will Foran <willforan+zim-wiki-mode@gmail.com>
 ;; Keywords: outlines
-;; Package-Requires: ((emacs "25") (helm-ag "0.58") (helm-projectile "0.14.0") (dokuwiki-mode "0.1.1") (link-hint "0.1") (pretty-hydra "0.2.2"))
-;; Version: 0.1.1
+;; Package-Requires: ((emacs "25.1") (helm-ag "0.58") (helm-projectile "0.14.0") (dokuwiki-mode "0.1.1") (link-hint "0.1") (pretty-hydra "0.2.2"))
+;; Version: 0.2.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -40,8 +40,8 @@
   :tag "Zim-Wiki"
   :link '(url-link "http://zim-wiki.org"))
 
-(defcustom zim-wiki-root (expand-file-name "~/notes/PersonalWiki")
-  "The root folder for the zim wiki notebook."
+(defcustom zim-wiki-always-root nil
+  "Force a single notebook root folder instead of using projectile's root"
   :group 'zim-wiki
   :type 'string)
 (defcustom zim-wiki-journal-datestr "Calendar/%G/Week_%02V.txt"
@@ -54,18 +54,20 @@
   :type 'string)
 
 ;; Functions
+(defun zim-wiki-root  ()
+  "Find the file system zim wiki notebook root."
+  (or zim-wiki-always-root (projectile-project-root)))
 
-(defun zim-wiki-now-page (&optional time)
-  "What is the path to the page at TIME (default to now)."
-  (let ((datestr (format-time-string zim-wiki-journal-datestr time)))
-	(concat zim-wiki-root "/" datestr)))
+(defun zim-wiki-now-page (&optional root time)
+  "What is the path to the page at TIME (default to now) at ROOT (default to projectile root)."
+  (let ((datestr (format-time-string zim-wiki-journal-datestr time))
+        (thisroot (or root (zim-wiki-root))))
+	(concat thisroot "/" datestr)))
 
-(defun zim-wiki-goto-now (&optional time)
-  "Go to the journal page for TIME (default to now)."
+(defun zim-wiki-goto-now (&optional root time)
+  "Go to the notebook ROOT's (def. current projectie root) journal page for TIME (default to now)."
   (interactive)
-  (switch-to-buffer (find-file-noselect (zim-wiki-now-page time)))
-  ;; see
-  (zim-wiki-mode)
+  (switch-to-buffer (find-file-noselect (zim-wiki-now-page root time)))
   ;; if empty insert week template.
   ;; TODO: will throw if not week. make month template?
   (if (= (buffer-size) 0) (zim-wiki-week-template 5 time)))
@@ -73,8 +75,7 @@
 (defun zim-wiki-search ()
   "Search zim notebook with ag."
   (interactive)
-  (helm-do-ag zim-wiki-root)
-  (zim-wiki-mode))
+  (helm-do-ag (zim-wiki-root)))
 
 (defun zim-wiki-mklink (path &optional text)
   "Make a link from a PATH with optional TEXT: [[path]] or [[path|text]]."
@@ -101,7 +102,7 @@
 	    "^\\+"
 	    (replace-regexp-in-string "\\.txt\$" "/" from)
 	    zp))
-       (zr (concat zim-wiki-root "/" ))
+       (zr (concat (zim-wiki-root) "/" ))
        ;; any number of starting : are root
        (zp (replace-regexp-in-string "^:+" zr zp))
        (zp (replace-regexp-in-string ":+" "/"  zp))
@@ -122,11 +123,11 @@
        ;;  * normal: /home/b/blah
        ;;  * home alias: ~/b/blah
        ;;  * symlink: ~/b/blah -> /emulated/0/storage/blah
-       (zp (replace-regexp-in-string (concat "^" zim-wiki-root) ":" zp))
+       (zp (replace-regexp-in-string (concat "^" (zim-wiki-root) ) ":" zp))
        (zp (replace-regexp-in-string
-	    (concat "^" (expand-file-name zim-wiki-root)) ":" zp))
+	    (concat "^" (expand-file-name (zim-wiki-root)) ) ":" zp))
        (zp (replace-regexp-in-string
-	    (concat "^" (expand-file-name (file-truename zim-wiki-root)))
+	    (concat "^" (expand-file-name (file-truename (zim-wiki-root))) )
 	    ":" zp))
        ;; no .txt,  / becomes :, no repeat :
        (zp (replace-regexp-in-string ".txt" "" zp)) ;; no extension
@@ -172,8 +173,7 @@ N.B. text is :a:b not /a/b but same file pattern rules apply"
     (if (and fname (file-exists-p fname))
 	    (find-file fname)
 	    (find-file-at-point fname))
-    (if (= (buffer-size) 0) (zim-wiki-insert-header))
-    (zim-wiki-mode)))
+    (if (= (buffer-size) 0) (zim-wiki-insert-header))))
 
 (defun zim-wiki-ffap (&optional wikipath)
   "Goto file from WIKIPATH."
@@ -322,7 +322,7 @@ Only search the range between just after the point and BOUND."
   (mapcar (lambda (x)
           (let ((p (zim-wiki-path2wiki x)))
 		    (list (replace-regexp-in-string ":" "/" p) p)))
-	  (directory-files-recursively zim-wiki-root "txt\$")))
+	  (directory-files-recursively (zim-wiki-root) "txt\$")))
 
 (defun zim-wiki-mode--make-candidate (candidate)
   (let ((text (car candidate))
@@ -394,9 +394,9 @@ Only search the range between just after the point and BOUND."
     (define-key map (kbd "C-c C-l") #'zim-wiki-insert-search)
 
     (define-key map (kbd "C-c M-w") #'zim-wiki-link-wrap)                ;; a:b -> [[a:b]]
-    (define-key map (kbd "C-c M-y") #'zim-wiki-buffer-path-to-kill-ring) ;; copy current file path
+    (define-key map (kbd "C-M-y"  ) #'zim-wiki-buffer-path-to-kill-ring) ;; copy current file path
     (define-key map (kbd "C-c M-p") #'zim-wiki-insert-kill-ring-as-link) ;; paste as a link
-    (define-key map (kbd "C-c C-p") #'zim-wiki-insert-prev-buffer-link)  ;; buffer before this one as a wiki link
+    (define-key map (kbd "C-c M-P"  ) #'zim-wiki-insert-prev-buffer-link)  ;; buffer before this one as a wiki link
 
     ;; date/time
     (define-key map (kbd "C-c C-n") #'zim-wiki-goto-now)              ;; go to now page
@@ -404,8 +404,8 @@ Only search the range between just after the point and BOUND."
     (define-key map (kbd "C-c M-n") #'zim-wiki-insert-current-at-now) ;; insert cur page into now page (and go there)
 
     ;; tree
-    ;;(define-key map (kbd "C-c t")   'neotree-toggle)  ; toggle tree
-    ;;(define-key map (kbd "C-c T")   'neotree-find)    ; find thing in tree
+    ;;(define-key map (kbd "C-c T")   'neotree-toggle)  ; toggle tree
+    ;;(define-key map (kbd "C-c t")   'neotree-find)    ; find thing in tree
 
     ;; org mode theft
     ;;(define-key map (kbd "M-RET")   'org-insert-item)    ; insert new list item
