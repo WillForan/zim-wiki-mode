@@ -317,21 +317,23 @@ Only search the range between just after the point and BOUND."
 ;; http://sixty-north.com/blog/writing-the-simplest-emacs-company-mode-backend
 (require 'cl-lib)
 
-(defvar zim-wiki-mode-company-keywords
-  "all the files we know about"
+; NB. should have zim-wiki-always-root set
+(setq zim-wiki-mode-company-keywords
   (mapcar (lambda (x)
           (let ((p (zim-wiki-path2wiki x)))
-		    (list (replace-regexp-in-string ":" "/" p) p)))
+		    (list p (replace-regexp-in-string ":" "/" p))))
 	  (directory-files-recursively (zim-wiki-root) "txt\$")))
 
 (defun zim-wiki-mode--make-candidate (candidate)
+  "propertize for *--canidates"
   (let ((text (car candidate))
         (meta (cadr candidate)))
     (propertize text 'meta meta)))
 
 (defun zim-wiki-mode--candidates (prefix)
+  "keywords -> canidates"
   (let (res)
-    (dolist (item zim-wiki-mode-keywords)
+    (dolist (item zim-wiki-mode-company-keywords)
       (when (string-prefix-p prefix (car item))
         (push (zim-wiki-mode--make-candidate item) res)))
     res))
@@ -348,10 +350,13 @@ Only search the range between just after the point and BOUND."
   (interactive (list 'interactive))
   (cl-case command
     (interactive (company-begin-backend 'zim-wiki-mode-complete))
-    (prefix (company-grab-symbol))
+    (prefix (company-grab-line "\\(^\\| \\):[a-zA-Z:_0-9]*"))
     (candidates (zim-wiki-mode--candidates arg))
     (annotation (zim-wiki-mode--annotation arg))
-    (meta (zim-wiki-mode--meta arg))))
+    (no-cache t)
+    ;(meta (zim-wiki-mode--meta arg))
+    (post-completion (zim-wiki-link-wrap))
+))
 
 
 ;; pretty hydra menu
@@ -423,16 +428,6 @@ Only search the range between just after the point and BOUND."
 
 (provide 'zim-wiki-mode)
 
-
-;; TODO:
-;;  * agenda "[ ] task [d: yyyy-mm-dd]"
-;;  * backlink collection (use sqlitedb? zim-wiki uses?)
-;;  * tags
-
-;;  * prettify headers?
-;;    https://github.com/sabof/org-bullets/blob/master/org-bullets.el
-
-;;; zim-wiki-mode.el ends here
 
 ;; TODO:
 ;;  * agenda "[ ] task [d: yyyy-mm-dd]"
