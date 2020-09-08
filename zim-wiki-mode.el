@@ -198,8 +198,7 @@ N.B. text is :a:b not /a/b but same file pattern rules apply"
 (defun zim-wiki-helm-projectile ()
   "Go to a file using ‘helm-projectile’ (requires notebook in VCS)."
   (interactive)
-  (helm-projectile)
-  (zim-wiki-mode))
+  (helm-projectile))
 
 ;; find a page but dont go there, just insert it
 (defun zim-wiki-buffer-to-link (buffer)
@@ -258,7 +257,8 @@ Opens projectile buffer before switching back"
       (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))
       " ======\n"
       "Created: " (format-time-string "%A %d %B %Y") "\n";Created Thursday 17 May 2018
-      )))
+      ))
+  (zim-wiki-mode))
 
 (defun zim-wiki-week-template (&optional n time)
   "Gen week template for N (5) days at TIME (now)."
