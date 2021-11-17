@@ -96,7 +96,11 @@
   "Transform zim link ZP (':a:b') to file path /root/a/b.txt.
   '+' is relative to current buffer or FROM"
   (let*
-      ((from (if (not from) (buffer-file-name) from)) 
+      ((from (if (not from) (buffer-file-name) from))
+       ;; if no buffer-file-name, dont error? TODO: debug this
+       (from (if (not from) "" from))
+       ;; spaces are _ in file names
+       (zp (replace-regexp-in-string " " "_"  zp))
        ;; replace starging + with relative path of from
        (zp (replace-regexp-in-string
 	    "^\\+"
