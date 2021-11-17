@@ -316,51 +316,40 @@ Only search the range between just after the point and BOUND."
 
 (push 'link-hint-zim-wiki-link link-hint-types)
 
-;; company mode completion
-;; https://github.com/company-mode/company-mode/wiki/Writing-backends
-;; http://sixty-north.com/blog/writing-the-simplest-emacs-company-mode-backend
-(require 'cl-lib)
+;; completion-at-point-functions
+(defvar zim-wiki-completion-canidates '()
+  "list of wikipages colon separated paths")
+(defun zim-wiki-refresh-completions ()
+  "update list of completion candidates by traversing filesystem at wiki root
+ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIKI-ROOT)"
+  (interactive)
+  (setq zim-wiki-completion-canidates
+	(mapcar #'zim-wiki-path2wiki
+		(directory-files-recursively (zim-wiki-root) "txt\$"))))
 
-; NB. should have zim-wiki-always-root set
-(setq zim-wiki-mode-company-keywords
-  (mapcar (lambda (x)
-          (let ((p (zim-wiki-path2wiki x)))
-		    (list p (replace-regexp-in-string ":" "/" p))))
-	  (directory-files-recursively (zim-wiki-root) "txt\$")))
+(defun zim-wiki--back-to-space-or-line (pt)
+  "get point of the closest space, or beginning of line if first"
+  (let ((this-line (line-beginning-position)))
+    (save-excursion
+      (goto-char pt)
+      (skip-syntax-backward "^ ")
+      (max (point) this-line))))
 
-(defun zim-wiki-mode--make-candidate (candidate)
-  "propertize for *--canidates"
-  (let ((text (car candidate))
-        (meta (cadr candidate)))
-    (propertize text 'meta meta)))
+(defun  zim-wiki-capf-link-wrap (string status)
+  "when capf is finished, make the text into a link"
+	 ;; (when (eq status 'finished) (zim-wiki-mklink string))
+	 (when (eq status 'finished) (zim-wiki-link-wrap)))
 
-(defun zim-wiki-mode--candidates (prefix)
-  "keywords -> canidates"
-  (let (res)
-    (dolist (item zim-wiki-mode-company-keywords)
-      (when (string-prefix-p prefix (car item))
-        (push (zim-wiki-mode--make-candidate item) res)))
-    res))
-
-(defun zim-wiki-mode--meta (candidate)
-  (format "This will use %s of %s"
-          (get-text-property 0 'meta candidate)
-          (substring-no-properties candidate)))
-
-(defun zim-wiki-mode--annotation (candidate)
-  (format " (%s)" (get-text-property 0 'meta candidate)))
-
-(defun zim-wiki-mode-complete (command &optional arg &rest ignored)
-  (interactive (list 'interactive))
-  (cl-case command
-    (interactive (company-begin-backend 'zim-wiki-mode-complete))
-    (prefix (company-grab-line "\\(^\\| \\):[a-zA-Z:_0-9]*"))
-    (candidates (zim-wiki-mode--candidates arg))
-    (annotation (zim-wiki-mode--annotation arg))
-    (no-cache t)
-    ;(meta (zim-wiki-mode--meta arg))
-    (post-completion (zim-wiki-link-wrap))
-))
+(defun zim-wiki-capf ()
+  "use ZIM-WIKI-COMPLETION-CANIDATES for completion. wrap as link when finished"
+  (when
+      ;; (looking-back ":[a-zA-Z:]+" (-(point)(line-beginning-position)) t)
+      (looking-back ":[a-zA-Z:]+")
+      (when zim-wiki-completion-canidates
+	(list (zim-wiki--back-to-space-or-line (match-beginning 0))
+	      (match-end 0)
+	      zim-wiki-completion-canidates
+	      :exit-function #'zim-wiki-capf-link-wrap))))
 
 
 ;; pretty hydra menu
@@ -429,7 +418,9 @@ Only search the range between just after the point and BOUND."
 (add-to-list 'magic-mode-alist '(".*x-zim-wiki" . zim-wiki-mode))
 
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
-  "Major mode for editing zim wiki.")
+  "Major mode for editing zim wiki."
+  (add-hook 'completion-at-point-functions 'zim-wiki-capf nil 'local)
+  (run-hooks 'zim-wiki-mode-hook))
 
 (provide 'zim-wiki-mode)
 
