@@ -420,8 +420,21 @@ Wrap as link when finished."
 ;; this is useful for e.g. neotree
 (add-to-list 'magic-mode-alist '(".*x-zim-wiki" . zim-wiki-mode))
 
+
+(defface zim-wiki-font-tag '((t (:inherit font-lock-keyword-face)))
+    "How @tag looks in zim-wiki-mode."
+    :group 'zim-wiki-mode)
+
+(defvar zim-wiki-font-lock-keywords
+  `(,@dokuwiki-font-lock-keywords
+    ;; @tag as keyword
+    ("\\(^\\|\\B\\)@[A-Za-z0-9]+" (0 'zim-wiki-font-tag t))))
+
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
   "Major mode for editing zim wiki."
+  (set (make-local-variable 'font-lock-defaults)
+       '(zim-wiki-font-lock-keywords
+         nil nil ((?_ . "w")) nil))
   (add-hook 'completion-at-point-functions 'zim-wiki-capf nil 'local)
   (run-hooks 'zim-wiki-mode-hook))
 
