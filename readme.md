@@ -11,25 +11,31 @@ Zim's plain text markup is open to any editor. But only Zim Desktop Wiki itself 
 
 zim-wiki-mode is a [recipe](https://github.com/melpa/melpa/blob/master/recipes/zim-wiki-mode) in [melpa](https://melpa.org/)! 
 
-If you want bleading edge, grab from the `dev` branch.
-```
-curl "https://raw.githubusercontent.com/WillForan/zim-wiki-mode/dev/zim-wiki-mode.el" > ~/path/to/zim-wiki-mode.el
-```
-
-`~/.emacs` might look like
+If you want bleading edge, grab from git. `~/.emacs.d/init.el` might include
 
 ```elisp
 ;; setup wiki mode
 (use-package zim-wiki-mode
-  :load-path "~/path/to/zim-wiki-mode.el" ; if using dev branch, otherwise no need
+  :quelpa ((dokuwiki :fetcher github :repo "WillForan/zim-wiki-mode") :upgrade t)
   :bind ("C-c C-n" . zim-wiki-goto-now)
   :init
     (add-hook 'zim-wiki-mode-hook 'flyspell-mode)
   :config
     (setq zim-wiki-always-root "~/notes/PersonalWiki") ; if not set, would use projectile directory
     (setq zim-wiki-journal-datestr "Calendar/%Y/%02m.txt")
-    (evil-leader/set-key-for-mode 'zim-wiki-mode "z" 'zim-wiki-hydra/body)
-)
+
+    (zim-wiki-refresh-completion) ; SLOW. get list for company-cap
+
+    (evil-leader/set-key-for-mode 'zim-wiki-mode "z" 'zim-wiki-hydra/body))
+
+
+;; modified dokuwiki-mode with outline-magic symmetric headers
+(use-package dokuwiki-mode
+  :quelpa ((dokuwiki :fetcher github :repo "WillForan/dokuwiki-mode") :upgrade t)
+  :ensure t
+  :config
+   (require outline-magic)
+   (flyspell-mode 1))
 ```
 
 ## Setup
