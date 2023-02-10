@@ -168,6 +168,7 @@ NB text is :a:b not /a/b but same file pattern rules apply"
 		   ;; skip ahead of [[ if looking at first part of link
 	  	   (progn
 	  	    (skip-chars-forward "[")
+	  	    (skip-chars-backward "]")
 	  	    (ffap-string-at-point 'file))))
           (name (zim-wiki-wiki2path name)))
         (expand-file-name name)))
