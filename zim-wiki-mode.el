@@ -41,7 +41,7 @@
   :link '(url-link "http://zim-wiki.org"))
 
 (defcustom zim-wiki-always-root nil
-  "Force a single notebook root folder instead of using projectile's root"
+  "Force a single notebook root folder instead of using projectile's root."
   :group 'zim-wiki
   :type 'string)
 (defcustom zim-wiki-journal-datestr "Calendar/%G/Week_%02V.txt"
@@ -65,7 +65,8 @@
 	(concat thisroot "/" datestr)))
 
 (defun zim-wiki-goto-now (&optional root time)
-  "Go to the notebook ROOT's (def. current projectie root) journal page for TIME (default to now)."
+  "Go to the notebook ROOT's (defined as current projectie root).
+Journal page for TIME defaults to now."
   (interactive)
   (switch-to-buffer (find-file-noselect (zim-wiki-now-page root time)))
   ;; if empty insert week template.
@@ -161,7 +162,7 @@
 (defun zim-wiki-ffap-file (&optional wikipath)
   "Wrap (zim-wiki-wiki2path WIKIPATH) with absolute path and text at postion.
 Move past any '[' before looking under cursor for a file
-N.B. text is :a:b not /a/b but same file pattern rules apply"
+NB text is :a:b not /a/b but same file pattern rules apply"
   (let* ( ;(name (or wikipath (word-at-point)))
           (name (or wikipath
 		   ;; skip ahead of [[ if looking at first part of link
@@ -318,9 +319,9 @@ Only search the range between just after the point and BOUND."
 
 ;; completion-at-point-functions
 (defvar zim-wiki-completion-canidates '()
-  "list of wikipages colon separated paths")
+  "List of wikipages colon separated paths.")
 (defun zim-wiki-refresh-completions ()
-  "update list of completion candidates by traversing filesystem at wiki root
+  "Update list of completion candidates by traversing filesystem at wiki root.
 ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIKI-ROOT)"
   (interactive)
   (setq zim-wiki-completion-canidates
@@ -328,7 +329,7 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
 		(directory-files-recursively (zim-wiki-root) "txt\$"))))
 
 (defun zim-wiki--back-to-space-or-line (pt)
-  "get point of the closest space, or beginning of line if first"
+  "Get point of the closest space, or beginning of line if first."
   (let ((this-line (line-beginning-position)))
     (save-excursion
       (goto-char pt)
@@ -336,12 +337,13 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
       (max (point) this-line))))
 
 (defun  zim-wiki-capf-link-wrap (string status)
-  "when capf is finished, make the text into a link"
+  "When capf is finished, make the text into a link."
 	 ;; (when (eq status 'finished) (zim-wiki-mklink string))
 	 (when (eq status 'finished) (zim-wiki-link-wrap)))
 
 (defun zim-wiki-capf ()
-  "use ZIM-WIKI-COMPLETION-CANIDATES for completion. wrap as link when finished"
+  "Use ZIM-WIKI-COMPLETION-CANIDATES for completion.
+Wrap as link when finished."
   (when
       ;; (looking-back ":[a-zA-Z:]+" (-(point)(line-beginning-position)) t)
       (looking-back ":[a-zA-Z:]+")
@@ -414,7 +416,7 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
 
 ;; if first line ends with x-zim-wiki use zim-wiki-mode
 ;; most pages opened by shortcuts call mode manully.
-;; this is useful for e.g. neotree 
+;; this is useful for e.g. neotree
 (add-to-list 'magic-mode-alist '(".*x-zim-wiki" . zim-wiki-mode))
 
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
