@@ -1,31 +1,31 @@
 # zim-wiki-mode
 An elisp package for editing [zim-wiki](http://zim-wiki.org) in emacs.
 
-This package primarily provides convenient page linking and journaling by extending `dokuwiki-mode` and wrapping functions around `helm-projectile`, `helm-ag`, and `link-hint`. A menu is provided through `pretty-hydra`. A very basic and slow completion method (`zim-wiki-mode-complete`) uses `company-mode`.
+This package primarily provides convenient page linking and journaling by extending `dokuwiki-mode` and wrapping functions around `helm-projectile`, `helm-ag`, and `link-hint`. A menu is provided through `pretty-hydra`. A very basic and slow-to-initialize completion method (`zim-wiki-mode-complete`) uses `company-mode`. Zim Desktop Wiki's sqlite db can be accessed for tag completion (`company-capf`) and backlink lookup (`heml`).
 
 ## Motivation
-Zim's plain text markup is open to any editor. But only Zim Desktop Wiki itself is any good at actually editing pages. `zim-wiki-mode` intends to improve the editing expereence in Emacs.
+Zim's plain text markup is open to any editor. But only Zim Desktop Wiki itself is any good at actually editing pages. `zim-wiki-mode` intends to improve the editing experience in Emacs.
 
 ## Demo
-using zim-wiki-mode with evil-mode and leuven theme
+using `zim-wiki-mode` with the `zerodark` theme and [M+ 1M font](https://github.com/coz-m/MPLUS_FONTS). 
 
 ![demo gif](demo.gif?raw=true)
 
  * link insert with <kbd>C-c M-l</kbd>
- * link autocomplete  `(zim-wiki-refresh-completions)`
- * search with helm-ag <kbd>C-c C-l</kbd>
+ * link auto-complete after `(zim-wiki-refresh-completions)`
+ * link insert from search with helm-ag <kbd>C-c C-l</kbd>
  * insert new header after `(require 'outline-magic)` <kbd>M-RET</kbd> and <kbd> M-S-left/right</kbd>
  * autocomplete tags. req `(zim-wiki-list-tags-refresh)`, stored in `zim-wiki-all-tags`
  * insert link to today <kbd>C-c C-n</kbd>
- * link hint <kbd>C-c l</kbd>
- * hydra Backlinks <kbd>C-c C-z <</kbd>
+ * follow link hint <kbd>C-c l</kbd>
+ * hydra back links <kbd>C-c C-z <</kbd>
 
 
 ## use-package
 
 zim-wiki-mode is a [recipe](https://github.com/melpa/melpa/blob/master/recipes/zim-wiki-mode) in [melpa](https://melpa.org/)!
 
-If you want bleading edge, grab from git. `~/.emacs.d/init.el` might include
+If you want bleeding edge, grab from git. `~/.emacs.d/init.el` might include
 
 ```elisp
 ;; setup wiki mode
