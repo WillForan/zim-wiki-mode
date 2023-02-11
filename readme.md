@@ -4,7 +4,9 @@ An elisp package for editing [zim-wiki](http://zim-wiki.org) in emacs.
 This package primarily provides convenient page linking and journaling by extending `dokuwiki-mode` and wrapping functions around `helm-projectile`, `helm-ag`, and `link-hint`. A menu is provided through `pretty-hydra`. A very basic and slow-to-initialize completion method (`zim-wiki-mode-complete`) uses `company-mode`. Zim Desktop Wiki's sqlite db can be accessed for tag completion (`company-capf`) and backlink lookup (`heml`).
 
 ## Motivation
-Zim's plain text markup is open to any editor. But only Zim Desktop Wiki itself is any good at actually editing pages. `zim-wiki-mode` intends to improve the editing experience in Emacs.
+Zim's plain text markup is open to any editor. But only [Zim Desktop Wiki](https://zim-wiki.org/) itself is any good at actually editing pages. `zim-wiki-mode` intends to improve the editing experience in Emacs.
+
+`zim-wiki-mode` also make editing on Android a bit more accessible, however it's a kludge. See [syncthing](https://syncthing.net/) (or owncloud, gdrive, dropbox, etc), [termux](https://termux.dev/en/), and `pkg install emacs`
 
 ## Demo
 using `zim-wiki-mode` with the `zerodark` theme and [M+ 1M font](https://github.com/coz-m/MPLUS_FONTS). 
