@@ -6,10 +6,24 @@ This package primarily provides convenient page linking and journaling by extend
 ## Motivation
 Zim's plain text markup is open to any editor. But only Zim Desktop Wiki itself is any good at actually editing pages. `zim-wiki-mode` intends to improve the editing expereence in Emacs.
 
+## Demo
+using zim-wiki-mode with evil-mode and leuven theme
 
-## use-package 
+![demo gif](demo.gif?raw=true)
 
-zim-wiki-mode is a [recipe](https://github.com/melpa/melpa/blob/master/recipes/zim-wiki-mode) in [melpa](https://melpa.org/)! 
+ * link insert with <kbd>C-c M-l</kbd>
+ * link autocomplete  `(zim-wiki-refresh-completions)`
+ * search with helm-ag <kbd>C-c C-l</kbd>
+ * insert new header after `(require 'outline-magic)` <kbd>M-RET</kbd> and <kbd> M-S-left/right</kbd>
+ * autocomplete tags. req `(zim-wiki-list-tags-refresh)`, stored in `zim-wiki-all-tags`
+ * insert link to today <kbd>C-c C-n</kbd>
+ * link hint <kbd>C-c l</kbd>
+ * hydra Backlinks <kbd>C-c C-z <</kbd>
+
+
+## use-package
+
+zim-wiki-mode is a [recipe](https://github.com/melpa/melpa/blob/master/recipes/zim-wiki-mode) in [melpa](https://melpa.org/)!
 
 If you want bleading edge, grab from git. `~/.emacs.d/init.el` might include
 
@@ -17,7 +31,12 @@ If you want bleading edge, grab from git. `~/.emacs.d/init.el` might include
 ;; setup wiki mode
 (use-package zim-wiki-mode
   :quelpa ((dokuwiki :fetcher github :repo "WillForan/zim-wiki-mode") :upgrade t)
-  :bind ("C-c C-n" . zim-wiki-goto-now)
+  :bind
+    ("C-c z" . zim-wiki-goto-now)
+    (:map zim-wiki-mode-map
+            ("M-p" . #'outline-previous-visible-heading)
+            ("M-n" . #'outline-next-visible-heading)
+            ("M-S-<return>" . #'org-insert-item))
   :init
     (add-hook 'zim-wiki-mode-hook 'flyspell-mode)
   :config
@@ -77,28 +96,3 @@ C-c C-N		zim-wiki-insert-now-link          link now page on current page
 C-c M-n		zim-wiki-insert-current-at-now    put current page link on now page, go to now page
 ```
 
-## Demo
-using zim-wiki-mode with evil-mode and leuven theme
-
-![demo gif](demo.gif?raw=true) 
-
-  0. <kbd>C-c C-n</kbd> go to the "now" page
-     * now page date format defined by `zim-wiki-journal-datestr`
-  1. <kbd>C-c l</kbd> create a new page in hierarchy by searching current tree 
-     * via `helm-projectile`
-  2. <kbd>C-c RET</kbd> follow the link we just created
-  3. <kbd>C-c N</kbd> insert a link to the current date 
-  4. write up some text about what we did
-  5. <kbd>C-c C-l</kbd> link in that page that has "emacs cider" content but whos name is not memberible
-     * helm provides <kbd>C-z</kbd> to preview
-  6. <kbd>C-c f</kbd> go to title: we want to add things to that just linked in page.
-     * could <kbd>C-c RET</kbd> on the link we created, but lets go there with by search file names (page titles)
-     * or go by search text again (<kbd>C-c C-f</kbd>)
-  7. <kbd>C-c C-p</kbd> link prev page: while we are there lets add where we came from
-  8. <kbd>C-c C-n</kbd> then link the page we are currently editing to the now page
-  9. <kbd>C-c w</kbd> paths freehand and wrap them in a link
-
-N.B.
-  * when following a link, we need to be on the word (not the `[[` or `]]` part)
-  * no autosave
-  * wiki must be under version control for `helm-projectile` (<kbd>C-c f</kbd> and <kbd>C-c l</kbd>)

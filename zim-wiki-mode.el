@@ -446,7 +446,7 @@ Wrap as link when finished."
     ("l" link-hint-open-link "link hint open")
     ("o" zim-wiki-ffap "open link")
     ("b" zim-wiki-ffap "open link below")
-    ("B" zim-wiki-backlink-helm "Backlink"))
+    ("<" zim-wiki-backlink-helm "Backlink"))
    "Insert"
    (("L" zim-wiki-insert-helm-projectile "link title")
     ("S" zim-wiki-insert-search "link search")
