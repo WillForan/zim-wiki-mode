@@ -25,6 +25,7 @@ If you want bleading edge, grab from git. `~/.emacs.d/init.el` might include
     (setq zim-wiki-journal-datestr "Calendar/%Y/%02m.txt")
 
     (zim-wiki-refresh-completion) ; SLOW. get list for company-cap
+    (zim-wiki-list-tags-refresh)  ; get tags from sqlite3 db
 
     (evil-leader/set-key-for-mode 'zim-wiki-mode "z" 'zim-wiki-hydra/body))
 
