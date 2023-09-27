@@ -420,6 +420,8 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
   "Major mode for editing zim wiki."
   (add-hook 'completion-at-point-functions 'zim-wiki-capf nil 'local)
+  ;; specifically added for org-clock-{in/out}
+  (setq-local org-complex-heading-regexp "^\\(=+\\)")
   (run-hooks 'zim-wiki-mode-hook))
 
 (provide 'zim-wiki-mode)
