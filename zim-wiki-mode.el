@@ -41,7 +41,7 @@
   :link '(url-link "http://zim-wiki.org"))
 
 (defcustom zim-wiki-always-root nil
-  "Force a single notebook root folder instead of using projectile's root"
+  "Force a single notebook root folder instead of using projectile's root."
   :group 'zim-wiki
   :type 'string)
 (defcustom zim-wiki-journal-datestr "Calendar/%G/Week_%02V.txt"
@@ -58,6 +58,87 @@
   "Find the file system zim wiki notebook root."
   (or zim-wiki-always-root (projectile-project-root)))
 
+;;; EXTERNAL/DB
+(defun zim-wiki-run-external-index ()
+  (interactive)
+  (shell-command (concat  "zim --index " (zim-wiki-root))))
+
+(defun zim-wiki-db ()
+  "Where does the Zim Desktop Wiki Sqlite3 db live?"
+  (let* ((zim-cache-dir (expand-file-name "~/.cache/zim"))
+         (root-underscore (replace-regexp-in-string "/" "_" (zim-wiki-root)))
+         (root-underscore (replace-regexp-in-string "^_+\\|_+$" "" root-underscore))
+         (db (file-name-concat zim-cache-dir (concat "notebook-" root-underscore) "index.db")))
+    (if (not (file-exists-p db)) (error (concat "Cannot find zim db:" db)))
+    db))
+
+(defun zim-wiki-db-query (query)
+  "QUERY Zim Desktop Wiki's sqlite3 database."
+  (let* ((cmd (concat "sqlite3 " (zim-wiki-db) " '" query "'")))
+    (shell-command-to-string cmd)))
+
+;;; TAGS
+(defvar zim-wiki-all-tags ()
+  "List of all tags in database.  Populated by ZIM-WIKI-TAGS-REFRESH.")
+
+(defun zim-wiki-list-tags-refresh ()
+  "Get tags from db.  Save to ZIM-WIKI-ALL-TAGS."
+  (interactive)
+  (let* ((res (zim-wiki-db-query "select name from tags"))
+         (tags (delete "" (split-string res))))
+    (setq zim-wiki-all-tags (mapcar (lambda (x) (concat "@" x)) tags))))
+
+(defun zim-wiki-tag-capf ()
+  "Use ZIM-WIKI-ALL-TAGS for completion."
+  (when
+      (looking-back "@[A-Za-z0-9:_-]+")
+      (when zim-wiki-all-tags
+	(list (zim-wiki--back-to-space-or-line (match-beginning 0))
+	      (match-end 0)
+	      zim-wiki-all-tags))))
+
+;;; BACKLINKS
+(defun zim-wiki-backlinks (&optional page)
+  "List all pages linking to PAGE using sqlite3 query."
+  (interactive)
+  (let* ((page (or page  (replace-regexp-in-string (zim-wiki-root) "" (buffer-file-name))))
+         (res (zim-wiki-db-query (concat "
+   with i as (
+     select pages.id, path from pages
+     join files on files.id=pages.source_file
+     where path like \"" page "\"),
+   bl as (
+     select * from i join links on i.id = target
+   )
+   -- select pages.id, files.path as thispage, bl.path as backlink
+   select files.path
+   from bl
+   join pages on bl.source = pages.id
+   join files on files.id = pages.source_file;
+")))
+         ;; we could format this as zim links
+         ;; but we probably want to jump to the file. so leave like that
+         ;; (pages (replace-regexp-in-string "/" ":" res))
+         ;; (pages (replace-regexp-in-string ".txt$" "]]" pages))
+         ;; (pages (replace-regexp-in-string "^" "[[:" pages))
+         )
+    (split-string res)))
+
+(defvar zim-wiki-backlinks-helm-cache () "Backlink helm selection cache.")
+(defun zim-wiki-backlink-helm ()
+  "Menu to jump to a backlink."
+  (interactive)
+  (setq zim-wiki-backlinks-helm-cache (zim-wiki-backlinks))
+  (helm :sources '((name . "Backlinks")
+                   (candidates . zim-wiki-backlinks-helm-cache) ; works
+                   ;; (candidates . (lambda () (zim-wiki-backlinks "%"))) ; works
+                   ;; (candidates . (lambda () (zim-wiki-backlinks))) ; fails
+                   ;; (candidates . (lambda () (zim-wiki-backlinks nil))) ; fails
+                   ;; (candidates . zim-wiki-backlinks) ; fails - wront type argument arrayp nil
+                   (action . (lambda (candidate)
+                               (switch-to-buffer (find-file-noselect(file-name-concat (zim-wiki-root) candidate))))))))
+
+;;; PAGES
 (defun zim-wiki-now-page (&optional root time)
   "What is the path to the page at TIME (default to now) at ROOT (default to projectile root)."
   (let ((datestr (format-time-string zim-wiki-journal-datestr time))
@@ -65,7 +146,8 @@
 	(concat thisroot "/" datestr)))
 
 (defun zim-wiki-goto-now (&optional root time)
-  "Go to the notebook ROOT's (def. current projectie root) journal page for TIME (default to now)."
+  "Go to the notebook ROOT's (defined as current projectie root).
+Journal page for TIME defaults to now."
   (interactive)
   (switch-to-buffer (find-file-noselect (zim-wiki-now-page root time)))
   ;; if empty insert week template.
@@ -94,7 +176,7 @@
 ;;       deal with spaces
 (defun zim-wiki-wiki2path (zp &optional from)
   "Transform zim link ZP (':a:b') to file path /root/a/b.txt.
-  '+' is relative to current buffer or FROM"
+'+' is relative to current buffer or FROM"
   (let*
       ((from (if (not from) (buffer-file-name) from))
        ;; if no buffer-file-name, dont error? TODO: debug this
@@ -161,12 +243,13 @@
 (defun zim-wiki-ffap-file (&optional wikipath)
   "Wrap (zim-wiki-wiki2path WIKIPATH) with absolute path and text at postion.
 Move past any '[' before looking under cursor for a file
-N.B. text is :a:b not /a/b but same file pattern rules apply"
+NB text is :a:b not /a/b but same file pattern rules apply"
   (let* ( ;(name (or wikipath (word-at-point)))
           (name (or wikipath
 		   ;; skip ahead of [[ if looking at first part of link
 	  	   (progn
 	  	    (skip-chars-forward "[")
+	  	    (skip-chars-backward "]")
 	  	    (ffap-string-at-point 'file))))
           (name (zim-wiki-wiki2path name)))
         (expand-file-name name)))
@@ -318,9 +401,9 @@ Only search the range between just after the point and BOUND."
 
 ;; completion-at-point-functions
 (defvar zim-wiki-completion-canidates '()
-  "list of wikipages colon separated paths")
+  "List of wikipages colon separated paths.")
 (defun zim-wiki-refresh-completions ()
-  "update list of completion candidates by traversing filesystem at wiki root
+  "Update list of completion candidates by traversing filesystem at wiki root.
 ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIKI-ROOT)"
   (interactive)
   (setq zim-wiki-completion-canidates
@@ -328,7 +411,7 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
 		(directory-files-recursively (zim-wiki-root) "txt\$"))))
 
 (defun zim-wiki--back-to-space-or-line (pt)
-  "get point of the closest space, or beginning of line if first"
+  "Get point of the closest space to PT, or beginning of line if first."
   (let ((this-line (line-beginning-position)))
     (save-excursion
       (goto-char pt)
@@ -336,12 +419,13 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
       (max (point) this-line))))
 
 (defun  zim-wiki-capf-link-wrap (string status)
-  "when capf is finished, make the text into a link"
+  "When capf STATUS is finished, make the text into a link.  STRING ignored."
 	 ;; (when (eq status 'finished) (zim-wiki-mklink string))
 	 (when (eq status 'finished) (zim-wiki-link-wrap)))
 
 (defun zim-wiki-capf ()
-  "use ZIM-WIKI-COMPLETION-CANIDATES for completion. wrap as link when finished"
+  "Use ZIM-WIKI-COMPLETION-CANIDATES for completion.
+Wrap as link when finished."
   (when
       ;; (looking-back ":[a-zA-Z:]+" (-(point)(line-beginning-position)) t)
       (looking-back ":[a-zA-Z:]+")
@@ -361,7 +445,8 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
     ("s" zim-wiki-search "search text")
     ("l" link-hint-open-link "link hint open")
     ("o" zim-wiki-ffap "open link")
-    ("b" zim-wiki-ffap "open link below"))
+    ("b" zim-wiki-ffap "open link below")
+    ("<" zim-wiki-backlink-helm "Backlink"))
    "Insert"
    (("L" zim-wiki-insert-helm-projectile "link title")
     ("S" zim-wiki-insert-search "link search")
@@ -408,18 +493,30 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
 
     ;; org mode theft
     ;;(define-key map (kbd "M-RET")   'org-insert-item)    ; insert new list item
-
     map)
    "Keymap for ‘zim-wiki-mode’.")
 
 ;; if first line ends with x-zim-wiki use zim-wiki-mode
 ;; most pages opened by shortcuts call mode manully.
-;; this is useful for e.g. neotree 
+;; this is useful for e.g. neotree
 (add-to-list 'magic-mode-alist '(".*x-zim-wiki" . zim-wiki-mode))
+
+;;; Font locking (color tags as keywords)
+(defface zim-wiki-font-tag '((t (:inherit font-lock-keyword-face)))
+    "How @tag looks in zim-wiki-mode."
+    :group 'zim-wiki-mode)
+
+(defvar zim-wiki-font-lock-keywords
+  `(,@dokuwiki-font-lock-keywords
+    ;; @tag as keyword
+    ("\\(^\\|\\B\\)@[A-Za-z0-9]+" (0 'zim-wiki-font-tag t))))
 
 (define-derived-mode zim-wiki-mode dokuwiki-mode "zim-wiki"
   "Major mode for editing zim wiki."
-  (add-hook 'completion-at-point-functions 'zim-wiki-capf nil 'local)
+  (set (make-local-variable 'font-lock-defaults)
+       '(zim-wiki-font-lock-keywords
+         nil nil ((?_ . "w")) nil))
+  (add-hook 'completion-at-point-functions 'zim-wiki-tag-capf nil 'local)
   ;; specifically added for org-clock-{in/out}
   (setq-local org-complex-heading-regexp "^\\(=+\\)")
   (run-hooks 'zim-wiki-mode-hook))
@@ -429,9 +526,6 @@ ZIM-WIKI-ALWAYS-ROOT should be set if not running within project folder (ZIM-WIK
 
 ;; TODO:
 ;;  * agenda "[ ] task [d: yyyy-mm-dd]"
-;;  * backlink collection (use sqlitedb? zim-wiki uses?)
-;;  * tags
-
 ;;  * prettify headers?
 ;;    https://github.com/sabof/org-bullets/blob/master/org-bullets.el
 
