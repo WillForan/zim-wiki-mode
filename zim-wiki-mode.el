@@ -242,17 +242,21 @@ Journal page for TIME defaults to now."
 ;; at point
 (defun zim-wiki-ffap-file (&optional wikipath)
   "Wrap (zim-wiki-wiki2path WIKIPATH) with absolute path and text at postion.
-Move past any '[' before looking under cursor for a file
-NB text is :a:b not /a/b but same file pattern rules apply"
-  (let* ( ;(name (or wikipath (word-at-point)))
-          (name (or wikipath
-		   ;; skip ahead of [[ if looking at first part of link
-	  	   (progn
-	  	    (skip-chars-forward "[")
-	  	    (skip-chars-backward "]")
-	  	    (ffap-string-at-point 'file))))
-          (name (zim-wiki-wiki2path name)))
-        (expand-file-name name)))
+Move to the end of any link we can find then to just before  '['.
+NB ffap-string is given text like :a:b not /a/b but same file pattern rules apply.
+[[:a:b | [problem] ]] will not parse correctly.
+"
+  (let* (                        ;(name (or wikipath (word-at-point)))
+         (name (or wikipath
+		   ;; find start of closest link "["
+                   (save-excursion
+	  	     (skip-chars-forward "^]|") ; forward to end of link
+	  	     ;; (skip-chars-backward "^[") ; move back to start
+                     (search-backward "[[")
+                     (forward-char 2)
+	  	     (ffap-string-at-point 'file))))
+         (name (zim-wiki-wiki2path name)))
+    (expand-file-name name)))
 
 (defun zim-wiki-ffap-open (fname)
   "Open a given file FNAME as a zim-wiki dokument."
