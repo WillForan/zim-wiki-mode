@@ -3,8 +3,9 @@
 ;; URL: https://github.com/WillForan/zim-wiki-mode
 ;; Author: Will Foran <willforan+zim-wiki-mode@gmail.com>
 ;; Keywords: outlines
-;; Package-Requires: ((emacs "25.1") (helm-ag "0.58") (helm-projectile "0.14.0") (dokuwiki-mode "0.1.1") (link-hint "0.1") (pretty-hydra "0.2.2"))
-;; Version: 0.2.0
+;; Package-Requires: ((emacs "25.1")  (helm-projectile "0.14.0") (dokuwiki-mode "0.1.1") )
+;; Package-Recommends: ((helm-ag "0.58") (link-hint "0.1") (pretty-hydra "0.2.2"))
+;; Version: 0.2.20240609
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +30,6 @@
 ;; configure other packages
 (require 'ffap)
 (require 'helm-projectile)
-(require 'helm-ag)
 (require 'dokuwiki-mode)
 
 ;; setings
@@ -52,6 +52,10 @@
   "How to insert date/time."
   :group 'zim-wiki
   :type 'string)
+(defcustom zim-wiki-root-searcher #'helm-do-ag
+  "Function to use to search at root of notebook."
+  :group 'zim-wiki
+  :type 'function)
 
 ;; Functions
 (defun zim-wiki-root  ()
@@ -157,7 +161,7 @@ Journal page for TIME defaults to now."
 (defun zim-wiki-search ()
   "Search zim notebook with ag."
   (interactive)
-  (helm-do-ag (zim-wiki-root)))
+  (funcall zim-wiki-root-searcher (zim-wiki-root)))
 
 (defun zim-wiki-mklink (path &optional text)
   "Make a link from a PATH with optional TEXT: [[path]] or [[path|text]]."
@@ -382,22 +386,30 @@ Opens projectile buffer before switching back"
 
 
 ;; link-hint
-(require 'link-hint)
-(defun zim-wiki-link-hint--next-dokuwiki-link (&optional bound)
-  "Find the next dokuwiki url.
-Only search the range between just after the point and BOUND."
-  (link-hint--next-property-with-value 'face 'dokuwiki-link bound))
+(defun zim-wiki-setup-link-hint ()
+  "Make zim wiki links understood by link-hint."
+   (defun zim-wiki-link-hint--next-dokuwiki-link (&optional bound)
+     "Find the next dokuwiki url.
+   Only search the range between just after the point and BOUND."
+     (link-hint--next-property-with-value 'face 'dokuwiki-link bound))
 
 
-(link-hint-define-type 'zim-wiki-link
-  :next #'zim-wiki-link-hint--next-dokuwiki-link
-  :at-point-p #'zim-wiki-ffap-file
-  ;; TODO consider making file links opt-in (use :vars)
-  :not-vars '(org-mode Info-mode)
-  :open #'zim-wiki-ffap-open
-  :copy #'kill-new)
+   (link-hint-define-type 'zim-wiki-link
+     :next #'zim-wiki-link-hint--next-dokuwiki-link
+     :at-point-p #'zim-wiki-ffap-file
+     ;; TODO consider making file links opt-in (use :vars)
+     :not-vars '(org-mode Info-mode)
+     :open #'zim-wiki-ffap-open
+     :copy #'kill-new)
 
-(push 'link-hint-zim-wiki-link link-hint-types)
+   (push 'link-hint-zim-wiki-link link-hint-types))
+
+;; only add if link-hints can be loaded
+(condition-case nil
+    (require 'link-hint)
+    (zim-wiki-setup-link-hint)
+  (error nil))
+
 
 ;; completion-at-point-functions
 (defvar zim-wiki-completion-canidates '()
@@ -437,25 +449,25 @@ Wrap as link when finished."
 
 
 ;; pretty hydra menu
-(require 'pretty-hydra)
-(pretty-hydra-define zim-wiki-hydra (:color blue :title "zim-wiki" :quit-key "q")
-  ("Go"
-   (("n" zim-wiki-goto-now "todays page")
-    ("t" zim-wiki-helm-projectile "file title")
-    ("s" zim-wiki-search "search text")
-    ("l" link-hint-open-link "link hint open")
-    ("o" zim-wiki-ffap "open link")
-    ("b" zim-wiki-ffap "open link below")
-    ("<" zim-wiki-backlink-helm "Backlink"))
-   "Insert"
-   (("L" zim-wiki-insert-helm-projectile "link title")
-    ("S" zim-wiki-insert-search "link search")
-    ("N" zim-wiki-insert-now-link "link today")
-    ("w" zim-wiki-link-wrap "wrap as link")
-    ("B" zim-wiki-insert-prev-buffer-link "prev"))
-   "Clipboard"
-   (("y" zim-wiki-buffer-path-to-kill-ring "current to clip")
-    ("p" zim-wiki-insert-kill-ring-as-link "insert clip as link"))))
+(if (featurep 'pretty-hydra)
+  (pretty-hydra-define zim-wiki-hydra (:color blue :title "zim-wiki" :quit-key "q")
+    ("Go"
+     (("n" zim-wiki-goto-now "todays page")
+      ("t" zim-wiki-helm-projectile "file title")
+      ("s" zim-wiki-search "search text")
+      ("l" link-hint-open-link "link hint open")
+      ("o" zim-wiki-ffap "open link")
+      ("b" zim-wiki-ffap "open link below")
+      ("<" zim-wiki-backlink-helm "Backlink"))
+     "Insert"
+     (("L" zim-wiki-insert-helm-projectile "link title")
+      ("S" zim-wiki-insert-search "link search")
+      ("N" zim-wiki-insert-now-link "link today")
+      ("w" zim-wiki-link-wrap "wrap as link")
+      ("B" zim-wiki-insert-prev-buffer-link "prev"))
+     "Clipboard"
+     (("y" zim-wiki-buffer-path-to-kill-ring "current to clip")
+      ("p" zim-wiki-insert-kill-ring-as-link "insert clip as link")))))
 
 ;; consider
 ;;(evil-leader/set-key "z" 'zimwik-hydra/body)
@@ -465,7 +477,7 @@ Wrap as link when finished."
 (defvar zim-wiki-mode-map
   (let ((map (make-sparse-keymap)))
     ;; hydra overview
-    (define-key map (kbd "C-c C-z")   #'zim-wiki-hydra/body)     ;; give all the options
+    (when (featurep 'pretty-hydra) (define-key map (kbd "C-c C-z")   #'zim-wiki-hydra/body))     ;; give all the options
     ;; go places
     (define-key map (kbd "C-c M-f")   #'zim-wiki-helm-projectile);; go to a page by searching file names
     (define-key map (kbd "C-c C-f")   #'zim-wiki-search)         ;; find in all of notebook
