@@ -525,6 +525,27 @@ Wrap as link when finished."
   (setq-local org-complex-heading-regexp "^\\(=+\\)")
   (run-hooks 'zim-wiki-mode-hook))
 
+
+(defun zim-wiki-next-file (&optional direction)
+"Go to next (or prev if DIRECTION=1) file relative to current buffer."
+(interactive)
+(let*
+ (
+  (direction (if direction direction -1))
+  (cur-dir (file-name-directory (buffer-file-name)))
+  (flist (-filter
+    (lambda (x) (and (string-match ".txt" x) (not (string-match ".#" x))))
+    (directory-files cur-dir)))
+  (cur-name (file-name-nondirectory (buffer-file-name)))
+  (idx (cl-position cur-name  flist :test #'equal))
+  (next-file (nth (+ idx direction) flist))
+ )
+ (find-file (file-name-concat cur-dir next-file)))
+)
+
+
+
+
 (provide 'zim-wiki-mode)
 
 
