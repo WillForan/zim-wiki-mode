@@ -13,23 +13,24 @@
     (should (string= (zim-wiki-path2wiki (expand-file-name "~/a/b/c/d")) ":c:d"))
     (should (string= (zim-wiki-path2wiki "~/a/b/y/z") ":y:z"))))
 
-(ert-deftest zim-wiki-ffap-file-test ()
+(defmacro zim-wiki-ffap-file-test (point)
+  "Setup link text in temp buffer.  Goto POINT.  Check zim-wiki-ffap-file."
+  `(ert-deftest ,(intern (format "zim-wiki-path-%s" point)) ()
+       (let ((zim-wiki-always-root "/r"))
+         (with-temp-buffer
+           ;;           5   9 11  15
+           ;;           |   | |   |
+           (insert "xzy [[:a:b| [link] text]] foobar ")
+           (goto-char ,point)
+           (should (string= "/r/a/b.txt" (zim-wiki-ffap-file)))))))
+
+(dolist (point '(0 5 9 11 15 100)) (eval `(zim-wiki-ffap-file-test ,point)))
+
+
+(ert-deftest zim-wiki-ffap-file-test-spaces ()
+  "Spaces in wiki path."
   (let ((zim-wiki-always-root "/r"))
     (with-temp-buffer
-      ;;           5   9 11  15
-      ;;           |   | |   |
-      (insert "xzy [[:a:b| [link] text]] foobar ")
-
-      ;;BUG: [[a:b| [problem] ]]  ; will throw errors
+      (insert "xzy [[:a:b c d| [link] text]] foobar") ;
       (goto-char (point-min))
-      (should (string= "/r/a/b.txt" (zim-wiki-ffap-file)))
-      (goto-char 5)
-      (should (string= "/r/a/b.txt" (zim-wiki-ffap-file)))
-      (goto-char 9)
-      (should (string= "/r/a/b.txt" (zim-wiki-ffap-file)))
-      (goto-char 11)
-      (should (string= "/r/a/b.txt" (zim-wiki-ffap-file)))
-      (goto-char 15)
-      (should (string= "/r/a/b.txt" (zim-wiki-ffap-file)))
-      (goto-char (point-max))
-      (should (string= "/r/a/b.txt" (zim-wiki-ffap-file))))))
+      (should (string= "/r/a/b_c_d.txt" (zim-wiki-ffap-file))))))
