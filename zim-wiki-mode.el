@@ -156,6 +156,14 @@ Journal page for TIME defaults to now."
     (zim-wiki-insert-header)
     (zim-wiki-week-template 5 time)))
 
+(defun zim-wiki-goto-next-week ()
+  "Go to next weeks page."
+  (interactive)
+  (let* (
+         (sevendays (* 60 60 24 7))
+         (next-week (time-add (current-time) (seconds-to-time sevendays))))
+    (zim-wiki-goto-now (zim-wiki-root) next-week)))
+
 (defun zim-wiki-search ()
   "Search zim notebook with ag."
   (interactive)
