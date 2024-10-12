@@ -143,7 +143,7 @@
   "What is the path to the page at TIME (default to now) at ROOT (default to projectile root)."
   (let ((datestr (format-time-string zim-wiki-journal-datestr time))
         (thisroot (or root (zim-wiki-root))))
-	(concat thisroot "/" datestr)))
+	(file-name-concat thisroot datestr)))
 
 (defun zim-wiki-goto-now (&optional root time)
   "Go to the notebook ROOT's (defined as current projectie root).
@@ -362,7 +362,7 @@ Opens projectile buffer before switching back"
 				  (time-add time (* x 86400))))
 	                dseq)))
        (progn
-	 (zim-wiki-ffap-open (zim-wiki-now-page time))
+	 (zim-wiki-ffap-open (zim-wiki-now-page nil time))
          (dolist
            (day dates)
            (insert (concat header-level " " day " " header-level
