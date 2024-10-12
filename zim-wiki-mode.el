@@ -152,7 +152,9 @@ Journal page for TIME defaults to now."
   (switch-to-buffer (find-file-noselect (zim-wiki-now-page root time)))
   ;; if empty insert week template.
   ;; TODO: will throw if not week. make month template?
-  (if (= (buffer-size) 0) (zim-wiki-week-template 5 time)))
+  (when (= (buffer-size) 0)
+    (zim-wiki-insert-header)
+    (zim-wiki-week-template 5 time)))
 
 (defun zim-wiki-search ()
   "Search zim notebook with ag."
