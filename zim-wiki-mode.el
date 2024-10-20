@@ -160,8 +160,12 @@ Journal page for TIME defaults to now."
   "Go to next weeks page."
   (interactive)
   (let* (
-         (sevendays (* 60 60 24 7))
-         (next-week (time-add (current-time) (seconds-to-time sevendays))))
+         ;; (sevendays (* 60 60 24 7))
+         ;; (next-week (time-add (current-time) (seconds-to-time sevendays)))
+         ;; 20241020 - use 'date' instead to get more accurate next-week time
+         ;; TODO: wont work if day is monday: test $(date -d %u) -eq 1 && next monday
+         (next-week  (date-to-time  (shell-command-to-string "date -d 'monday'") ))
+         )
     (zim-wiki-goto-now (zim-wiki-root) next-week)))
 
 (defun zim-wiki-search ()
