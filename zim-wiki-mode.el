@@ -408,8 +408,8 @@ Only search the range between just after the point and BOUND."
 (link-hint-define-type 'zim-wiki-link
   :next #'zim-wiki-link-hint--next-dokuwiki-link
   :at-point-p #'zim-wiki-ffap-file
-  ;; TODO consider making file links opt-in (use :vars)
-  :not-vars '(org-mode Info-mode)
+  ;; :not-vars '(org-mode Info-mode) ; updated 20250425: also breaking w3m
+  :vars '(zim-wiki-mode)
   :open #'zim-wiki-ffap-open
   :copy #'kill-new)
 
