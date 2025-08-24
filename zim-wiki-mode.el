@@ -3,8 +3,8 @@
 ;; URL: https://github.com/WillForan/zim-wiki-mode
 ;; Author: Will Foran <willforan+zim-wiki-mode@gmail.com>
 ;; Keywords: outlines
-;; Package-Requires: ((emacs "25.1") (helm-ag "0.58") (helm-projectile "0.14.0") (dokuwiki-mode "0.1.1") (link-hint "0.1") (pretty-hydra "0.2.2"))
-;; Version: 0.2.0
+;; Package-Requires: ((emacs "25.1") (dokuwiki-mode "0.1.1") (helm-projectile "0.14.0") (link-hint "0.1") (pretty-hydra "0.2.2"))
+;; Version: 0.3.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -29,7 +29,6 @@
 ;; configure other packages
 (require 'ffap)
 (require 'helm-projectile)
-(require 'helm-ag)
 (require 'dokuwiki-mode)
 
 ;; setings
@@ -171,7 +170,9 @@ Journal page for TIME defaults to now."
 (defun zim-wiki-search ()
   "Search zim notebook with ag."
   (interactive)
-  (helm-do-ag (zim-wiki-root)))
+  (if (fboundp 'counsel-ag)
+      (counsel-ag nil (zim-wiki-root))
+    (warn "package-install counsel for search")))
 
 (defun zim-wiki-mklink (path &optional text)
   "Make a link from a PATH with optional TEXT: [[path]] or [[path|text]]."
@@ -562,6 +563,7 @@ Wrap as link when finished."
 
 
 ;; TODO:
+;;  * remove helm: zim-wiki-backlink-helm to generic backend (20250823)
 ;;  * agenda "[ ] task [d: yyyy-mm-dd]"
 ;;  * prettify headers?
 ;;    https://github.com/sabof/org-bullets/blob/master/org-bullets.el
