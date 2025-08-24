@@ -4,7 +4,7 @@
 ;; Author: Will Foran <willforan+zim-wiki-mode@gmail.com>
 ;; Keywords: outlines
 ;; Package-Requires: ((emacs "25.1") (dokuwiki-mode "0.1.1") (helm-projectile "0.14.0") (link-hint "0.1") (pretty-hydra "0.2.2"))
-;; Version: 0.3.0
+;; Version: 0.3.1
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -171,9 +171,7 @@ Journal page for TIME defaults to now."
 (defun zim-wiki-search ()
   "Search zim notebook with ag."
   (interactive)
-  (if (fboundp 'counsel-ag)
-      (counsel-ag nil (zim-wiki-root))
-    (warn "package-install counsel for search")))
+  (helm-grep-ag (zim-wiki-root) nil))
 
 (defun zim-wiki-mklink (path &optional text)
   "Make a link from a PATH with optional TEXT: [[path]] or [[path|text]]."
