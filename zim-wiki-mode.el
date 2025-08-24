@@ -59,6 +59,7 @@
 
 ;;; EXTERNAL/DB
 (defun zim-wiki-run-external-index ()
+  "Run python zim's database indexer.  Updates file found by (zim-wiki-db) for backlinks and tags."
   (interactive)
   (shell-command (concat  "zim --index " (zim-wiki-root))))
 
@@ -123,13 +124,13 @@
          )
     (split-string res)))
 
-(defvar zim-wiki-backlinks-helm-cache () "Backlink helm selection cache.")
+(defvar zim-wiki-backlinks-cache () "Backlink helm selection cache.")
 (defun zim-wiki-backlink-helm ()
   "Menu to jump to a backlink."
   (interactive)
-  (setq zim-wiki-backlinks-helm-cache (zim-wiki-backlinks))
+  (setq zim-wiki-backlinks-cache (zim-wiki-backlinks))
   (helm :sources '((name . "Backlinks")
-                   (candidates . zim-wiki-backlinks-helm-cache) ; works
+                   (candidates . zim-wiki-backlinks-cache) ; works
                    ;; (candidates . (lambda () (zim-wiki-backlinks "%"))) ; works
                    ;; (candidates . (lambda () (zim-wiki-backlinks))) ; fails
                    ;; (candidates . (lambda () (zim-wiki-backlinks nil))) ; fails
